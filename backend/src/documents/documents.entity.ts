@@ -17,7 +17,7 @@ export class Document {
   filename: string;
 
   @Column()
-  path: string;
+  fileId: string;
 
   @CreateDateColumn()
   createdAt: Date;

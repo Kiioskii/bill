@@ -6,6 +6,17 @@ import {
   logoutService,
   signupService,
 } from "../services/authService";
+
+/**
+ * Custom hook providing authentication actions for login, signup, and sign out.
+ *
+ * @returns An object containing:
+ * - `login`: Mutation for logging in a user with email and password.
+ * - `signUp`: Mutation for signing up a new user with email and password.
+ * - `signOut`: Function to log out the current user.
+ *
+ * Each mutation handles success and error states, displaying toast notifications accordingly.
+ */
 export const useAuth = () => {
   const login = useMutation({
     mutationFn: async ({
@@ -18,7 +29,6 @@ export const useAuth = () => {
       return await loginService(email, password);
     },
     onSuccess: (data) => {
-      console.log("LOGIN DATA", data);
       showToast("Logged In", "success");
     },
     onError: (error: any) => {
@@ -37,11 +47,9 @@ export const useAuth = () => {
       return await signupService(email, password);
     },
     onSuccess: (data) => {
-      console.log("data", data);
       showToast("Success", "success");
     },
     onError: (error: any) => {
-      console.log("err", error);
       showToast(error.response.data.message || "Auth error", "error");
     },
   });

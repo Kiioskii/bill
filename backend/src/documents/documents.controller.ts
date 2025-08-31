@@ -24,19 +24,23 @@ export class DocumentsController {
     @UploadedFile() file: Express.Multer.File,
     @Req() req: { user: { sub: string } },
   ) {
-    console.log('req', req.user);
     const userId = req.user.sub;
     const document = await this.documentsService.uploadFile(file, userId);
     return document;
   }
 
-  // @Get(':id')
-  // async getDocument(@Param('id') id: string): Promise<Document | null> {
-  //   const document: Document = await this.documentsService.getDocumentById(id);
-  //   if (!document) throw new Error('Document not found');
+  @UseGuards(SupabaseJwtGuard)
+  @Get('getById')
+  async getDocument(
+    @Query('fileId') fileId: string,
+    @Req() req: { user: { sub: string } },
+  ): Promise<string | null> {
+    const userId = req.user.sub;
+    const url = await this.documentsService.getDocumentById(userId, fileId);
+    if (!url) throw new Error('Document not found');
 
-  //   return document;
-  // }
+    return url;
+  }
 
   @Get('list')
   async listDocuments(

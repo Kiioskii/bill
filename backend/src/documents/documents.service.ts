@@ -1,16 +1,17 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { supabase } from '../config/supabase';
 import { Document } from './documents.entity';
+import { v4 as uuidv4 } from 'uuid';
 @Injectable()
 export class DocumentsService {
   private readonly logger = new Logger(DocumentsService.name);
 
   async uploadFile(file: Express.Multer.File, userId: string) {
-    const filename = `${Date.now()}_${file.originalname}`;
+    const uniqueId = uuidv4();
 
     const { error } = await supabase.storage
       .from('documents')
-      .upload(filename, file.buffer, {
+      .upload(`${userId}/${uniqueId}`, file.buffer, {
         contentType: file.mimetype,
       });
 
@@ -19,15 +20,12 @@ export class DocumentsService {
       throw new Error('File upload error');
     }
 
-    const { data } = supabase.storage.from('documents').getPublicUrl(filename);
-    const fileUrl = data.publicUrl;
-
     const { data: insertedDocument, error: insertError } = await supabase
       .from('documents')
       .insert([
         {
           filename: file.originalname,
-          path: fileUrl,
+          file_id: uniqueId,
           user_id: userId,
         },
       ])
@@ -42,19 +40,17 @@ export class DocumentsService {
     return insertedDocument;
   }
 
-  async getDocumentById(id: string) {
-    const { data, error } = await supabase
+  async getDocumentById(userId: string, fileId: string) {
+    const { data, error } = await supabase.storage
       .from('documents')
-      .select('*')
-      .eq('id', id)
-      .single();
+      .createSignedUrl(`${userId}/${fileId}`, 300);
 
     if (error) {
       this.logger.error('Supabase fetch failed', error);
       throw new Error('Document do not found');
     }
 
-    return data;
+    return data.signedUrl;
   }
 
   async getDocumentList(index: number, limit: number): Promise<Document[]> {
@@ -76,7 +72,7 @@ export class DocumentsService {
         doc.id = d.id;
         doc.userId = d.user_id;
         doc.filename = d.filename;
-        doc.path = d.path;
+        doc.fileId = d.file_id;
         doc.createdAt = new Date(d.created_at); // jeśli jest w stringu
         return doc;
       });

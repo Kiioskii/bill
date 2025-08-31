@@ -1,9 +1,9 @@
-import DocumentsTable from "../components/DocumentsTable";
+import TableHandlerComponent from "../components/TableHandlerComponent";
 
 export const DocumentsPage = () => {
   return (
     <div>
-      <DocumentsTable />
+      <TableHandlerComponent />
     </div>
   );
 };
