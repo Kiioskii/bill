@@ -23,8 +23,10 @@ import {
   IconChevronRight,
   IconChevronsLeft,
   IconChevronsRight,
+  IconCircleCheckFilled,
   IconDotsVertical,
   IconLayoutColumns,
+  IconLoader,
   IconPlus,
   IconTrendingUp,
 } from "@tabler/icons-react";
@@ -94,6 +96,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { FaCheck } from "react-icons/fa";
+import { RxCross2 } from "react-icons/rx";
 
 function DraggableRow({ row }: { row: Row<z.infer<typeof schema>> }) {
   const { transform, transition, setNodeRef, isDragging } = useSortable({
@@ -119,6 +123,14 @@ function DraggableRow({ row }: { row: Row<z.infer<typeof schema>> }) {
     </TableRow>
   );
 }
+
+const statuses = {
+  accepted: (
+    <IconCircleCheckFilled className="fill-green-500 dark:fill-green-400" />
+  ),
+  declined: <RxCross2 />,
+  inProgress: <IconLoader />,
+};
 
 export const schema = z.object({
   id: z.number(),
@@ -152,6 +164,20 @@ const getColumns = (
     },
   },
   { accessorKey: "createdAt", header: "Created At" },
+  {
+    accessorKey: "status",
+    header: "Status",
+    cell: ({ row }) => (
+      <Badge variant="outline" className="text-muted-foreground px-1.5">
+        {statuses[row.original.status] ? (
+          statuses[row.original.status]
+        ) : (
+          <IconLoader />
+        )}
+        {row.original.status || "Unknown"}
+      </Badge>
+    ),
+  },
   {
     id: "actions",
     cell: () => (
