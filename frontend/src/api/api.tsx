@@ -8,7 +8,6 @@ const api = axios.create({
 api.interceptors.request.use(async (config) => {
   const { data, error } = await supabase.auth.getSession();
   if (error) throw new Error("Session error");
-  console.log("data", data);
 
   const accessToken = data.session?.access_token;
 

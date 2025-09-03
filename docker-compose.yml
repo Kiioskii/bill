@@ -1,0 +1,41 @@
+version: "3.8"
+services:
+  backend:
+    build: ./backend
+    container_name: backend
+    restart: always
+    ports:
+      - "3000:3000"
+    depends_on:
+      - pdf-service
+    networks:
+      - app_network
+    environment:
+      - NODE_ENV=development
+      - PDF_SERVICE_URL=http://pdf-service:8000
+
+  frontend:
+    build: ./frontend
+    container_name: frontend
+    restart: always
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+    networks:
+      - app_network
+    environment:
+      - VITE_API_URL=http://backend:3000
+
+  pdf-service:
+    build: ./services/pdf
+    container_name: pdf-service
+    restart: always
+    ports:
+      - "8000:8000"
+    networks:
+      - app_network
+
+networks:
+  app_network:
+    driver: bridge
