@@ -5,6 +5,9 @@ import { ConfigModule } from '@nestjs/config';
 import { DocumentsController } from './documents/documents.controller';
 import { DocumentsModule } from './documents/documents.module';
 import { MulterModule } from '@nestjs/platform-express';
+import { CategoriesController } from './categories/categories.controller';
+import { CategoriesService } from './categories/categories.service';
+import { CategoriesModule } from './categories/categories.module';
 import * as multer from 'multer';
 
 @Module({
@@ -17,8 +20,9 @@ import * as multer from 'multer';
     MulterModule.register({
       storage: multer.memoryStorage(),
     }),
+    CategoriesModule,
   ],
-  controllers: [AppController, DocumentsController],
-  providers: [AppService],
+  controllers: [AppController, DocumentsController, CategoriesController],
+  providers: [AppService, CategoriesService],
 })
 export class AppModule {}
