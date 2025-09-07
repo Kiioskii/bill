@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import {
+  extractDocumentRequest,
   getDocumentByIdRequest,
   listDocumentsRequest,
 } from "../api/documentsApi";
@@ -48,6 +49,22 @@ export const useDocumentById = (
       return await getDocumentByIdRequest(fileId);
     },
     enabled: isEnabled,
+  });
+
+  return { data, error, isLoading, refetch };
+};
+
+export const useExtractDocumentData = (
+  fileId?: string | null,
+  documentId?: string | null
+) => {
+  const { data, error, isLoading, refetch } = useQuery({
+    queryKey: ["extract_document", fileId, documentId],
+    queryFn: async () => {
+      if (!fileId || !documentId) return null; // guard
+      return await extractDocumentRequest({ fileId, documentId });
+    },
+    enabled: false,
   });
 
   return { data, error, isLoading, refetch };

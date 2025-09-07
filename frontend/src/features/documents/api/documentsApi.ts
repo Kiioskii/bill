@@ -27,3 +27,26 @@ export const getDocumentByIdRequest = async (fileId: string) => {
 
   return response.data;
 };
+
+export const extractDocumentRequest = async (params: {
+  fileId: string;
+  documentId: string;
+}) => {
+  /**
+   * Sends a GET request to retrieve a document by its ID.
+   *
+   * @param fileId - The unique identifier of the document to fetch.
+   * @returns A promise that resolves with the server response containing the document data.
+   */
+
+  const { fileId, documentId } = params;
+  console.log("------>");
+  console.log("fileId", fileId);
+  console.log("documentId", documentId);
+
+  const response = await api.get("documents/extractData", {
+    params: { fileId, documentId },
+  });
+
+  return response.data;
+};

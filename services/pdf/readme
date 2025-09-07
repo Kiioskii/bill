@@ -1,0 +1,7 @@
+
+
+Start virtual env:
+venv\Scripts\activate  
+
+Start app:
+uvicorn app:app --reload

@@ -42,6 +42,23 @@ export class DocumentsController {
     return url;
   }
 
+  @UseGuards(SupabaseJwtGuard)
+  @Get('extractData')
+  async extractData(
+    @Query('fileId') fileId: string,
+    @Query('documentId') documentId: string,
+    @Req()
+    req: { user: { sub: string } },
+  ) {
+    const userId = req.user.sub;
+
+    await this.documentsService.extractDataFromDocument(
+      userId,
+      fileId,
+      documentId,
+    );
+  }
+
   @Get('list')
   async listDocuments(
     @Query('index') index = '0',
@@ -49,9 +66,6 @@ export class DocumentsController {
   ): Promise<Document[]> {
     const pageIndex = parseInt(index) || 0;
     const pageLimit = parseInt(limit) || 10;
-
-    console.log('index', pageIndex);
-    console.log('pageLimit', pageLimit);
 
     const documentsList = await this.documentsService.getDocumentList(
       pageIndex,

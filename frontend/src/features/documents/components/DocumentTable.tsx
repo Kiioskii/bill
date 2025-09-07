@@ -98,6 +98,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FaCheck } from "react-icons/fa";
 import { RxCross2 } from "react-icons/rx";
+import { MdOutlineDataSaverOn } from "react-icons/md";
 
 function DraggableRow({ row }: { row: Row<z.infer<typeof schema>> }) {
   const { transform, transition, setNodeRef, isDragging } = useSortable({
@@ -140,7 +141,8 @@ export const schema = z.object({
 });
 
 const getColumns = (
-  handleDisplay: (fileId: string) => void
+  handleDisplay: (fileId: string) => void,
+  handleExtractData: (params: { fileId: string; documentId: string }) => void
 ): ColumnDef<z.infer<typeof schema>>[] => [
   { accessorKey: "id", header: "ID" },
   { accessorKey: "filename", header: "Filename" },
@@ -167,16 +169,26 @@ const getColumns = (
   {
     accessorKey: "status",
     header: "Status",
-    cell: ({ row }) => (
-      <Badge variant="outline" className="text-muted-foreground px-1.5">
-        {statuses[row.original.status] ? (
-          statuses[row.original.status]
-        ) : (
-          <IconLoader />
-        )}
-        {row.original.status || "Unknown"}
-      </Badge>
-    ),
+    cell: ({ row }) => {
+      const fileId = row.original.fileId;
+      const documentId = row.original.id;
+      return (
+        <Badge
+          variant="outline"
+          className="text-muted-foreground px-1.5 cursor-pointer"
+          onClick={() => {
+            handleExtractData({ documentId, fileId });
+          }}
+        >
+          {statuses[row.original.status] ? (
+            statuses[row.original.status]
+          ) : (
+            <MdOutlineDataSaverOn />
+          )}
+          {row.original.status || "Analyze"}
+        </Badge>
+      );
+    },
   },
   {
     id: "actions",
@@ -207,10 +219,12 @@ const getColumns = (
 export function DocumentTable({
   data: initialData,
   handleDisplay,
+  handleExtractData,
+  setAddCategory,
 }: {
   data: z.infer<typeof schema>[];
 }) {
-  const columns = getColumns(handleDisplay);
+  const columns = getColumns(handleDisplay, handleExtractData);
   const [data, setData] = useState(() => initialData);
   const [rowSelection, setRowSelection] = useState({});
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
@@ -262,7 +276,15 @@ export function DocumentTable({
       defaultValue="outline"
       className="w-full flex-col justify-start gap-6"
     >
-      <div className="flex items-center justify-end px-4 lg:px-6">
+      <div className="flex items-center justify-between px-4 lg:px-6">
+        <Button
+          variant={"outline"}
+          onClick={() => {
+            setAddCategory(true);
+          }}
+        >
+          Add category
+        </Button>
         <div className="flex items-center gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

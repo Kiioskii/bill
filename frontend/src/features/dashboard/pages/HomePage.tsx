@@ -1,3 +1,9 @@
+import { ChartAreaInteractive } from "@/components/chart-area-interactive";
+
 export const HomePage = () => {
-  return <h1 className="text-2xl font-bold text-black">Home Dashboard</h1>;
+  return (
+    <div>
+      <ChartAreaInteractive />
+    </div>
+  );
 };
