@@ -7,7 +7,7 @@ import {
 import { DocumentTable } from "./DocumentTable";
 import { useEffect, useState } from "react";
 import Dialog from "@/components/dialog";
-import CreateCategory from "./CreateCategory";
+import CreateCategory from "../../categories/components/CreateCategory";
 
 const TableHandlerComponent = () => {
   const [displayDocument, setDisplayDocument] = useState<string | null>(null);
@@ -53,7 +53,6 @@ const TableHandlerComponent = () => {
   }): void => {
     const { fileId, documentId } = params;
     setExtractDocument({ fileId, documentId });
-    // fetchExtractDocument();
   };
 
   useEffect(() => {
@@ -95,7 +94,7 @@ const TableHandlerComponent = () => {
       />
       {addCategory && (
         <Dialog title={"Add category"} toggleOpen={setAddCategory}>
-          <CreateCategory />
+          <CreateCategory toggleOpen={setAddCategory} />
         </Dialog>
       )}
     </div>

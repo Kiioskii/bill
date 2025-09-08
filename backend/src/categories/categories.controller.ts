@@ -9,8 +9,8 @@ export class CategoriesController {
 
   @UseGuards(SupabaseJwtGuard)
   @Post('create')
-  async createCategory(@Req() req, @Body dto: CreateCategoryDto) {
-    const userId = req.user.id;
+  async createCategory(@Req() req, @Body() dto: CreateCategoryDto) {
+    const userId = req.user.sub as string;
     const newCategory = await this.categoriesService.addCategory({
       userId,
       ...dto,
@@ -20,5 +20,14 @@ export class CategoriesController {
       message: 'Kategoria została utworzona pomyślnie',
       category: newCategory,
     };
+  }
+
+  @UseGuards(SupabaseJwtGuard)
+  @Get('list')
+  async getCategoryList(@Req req) {
+    const userId = req.user.sub as string;
+    const categoryList = await this.categoriesService.getCategoryList(userId);
+
+    return categoryList;
   }
 }

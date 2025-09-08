@@ -1,37 +1,41 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import * as FaIcons from "react-icons/fa";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { IoMdClose } from "react-icons/io";
 import ColorSelector from "./ColorSelector";
+import { useCategory } from "../hooks/useCategories";
 
-const CreateCategory = () => {
-  const [title, setTitle] = useState("");
-  const [color, setColor] = useState("blue-500");
-  const [selectedIcon, setSelectedIcon] = useState(null);
-  const [showIconPicker, setShowIconPicker] = useState(false);
-  const [search, setSearch] = useState("");
-  const [groups, setGroups] = useState([]);
+const CreateCategory = ({ toggleOpen }) => {
+  const [name, setName] = useState<string>("");
+  const [color, setColor] = useState<string>("blue-500");
+  const [selectedIcon, setSelectedIcon] = useState<string | null>(null);
+  const [showIconPicker, setShowIconPicker] = useState<boolean>(false);
+  const [search, setSearch] = useState<string>("");
 
   const allIcons = Object.keys(FaIcons);
 
-  const handleSelectIcon = (iconName) => {
+  const { createCategory } = useCategory();
+
+  const handleSelectIcon = (iconName: string) => {
     setSelectedIcon(iconName);
     setShowIconPicker(false);
   };
 
-  const handleCreateGroup = () => {
-    if (!title || !selectedIcon) return;
-
-    const newGroup = {
-      id: Date.now(),
-      title,
-      icon: selectedIcon,
-    };
-
-    setGroups((prev) => [...prev, newGroup]);
-    setTitle("");
-    setSelectedIcon(null);
+  const handleCreateCategory = () => {
+    if (!name || !color || !selectedIcon) return;
+    createCategory.mutate(
+      {
+        name,
+        color,
+        icon: selectedIcon,
+      },
+      {
+        onSuccess: () => {
+          toggleOpen();
+        },
+      }
+    );
   };
 
   return (
@@ -40,8 +44,8 @@ const CreateCategory = () => {
       <Input
         type="text"
         placeholder="Category name"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
+        value={name}
+        onChange={(e) => setName(e.target.value)}
       />
 
       {/* Wybór ikony */}
@@ -103,12 +107,12 @@ const CreateCategory = () => {
       )}
 
       <Button
-        onClick={handleCreateGroup}
-        disabled={!title || !selectedIcon}
+        onClick={handleCreateCategory}
+        disabled={!name || !selectedIcon || !color}
         variant={"default"}
         className="cursor-pointer"
       >
-        Create category
+        {createCategory.isPending ? "Creating..." : "Create"}
       </Button>
     </div>
   );

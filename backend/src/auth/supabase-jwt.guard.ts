@@ -15,6 +15,7 @@ export class SupabaseJwtGuard implements CanActivate {
     if (!authHeader) throw new UnauthorizedException('No token');
 
     const [type, token] = authHeader.split(' ');
+
     if (type !== 'Bearer' || !token)
       throw new UnauthorizedException('Invalid token');
 

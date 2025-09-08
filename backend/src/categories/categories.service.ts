@@ -13,12 +13,34 @@ export class CategoriesService {
     color: string;
   }) {
     try {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('categories')
-        .insert([dto])
+        .insert([
+          {
+            user_id: dto.userId,
+            name: dto.name,
+            icon: dto.icon,
+            color: dto.color,
+          },
+        ])
         .select()
         .single();
 
+      console.log('errr', error);
+
+      return data;
+    } catch (err: any) {
+      this.logger.error('Supabase fetch failed', err);
+      throw new Error('Create new category failed');
+    }
+  }
+
+  async getCategoryList(userId: string) {
+    try {
+      const { data, error } = await supabase
+        .from('categories')
+        .select('*')
+        .eq('user_id', userId);
       return data;
     } catch (err: any) {
       this.logger.error('Supabase fetch failed', err);
