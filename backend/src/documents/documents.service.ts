@@ -22,8 +22,14 @@ export class DocumentsService {
    * @returns The inserted document metadata from the database.
    * @throws Error if the file upload or database insertion fails.
    */
-  async uploadFile(file: Express.Multer.File, userId: string) {
+  async uploadFile(params: {
+    name: string;
+    categoryId: string;
+    file: Express.Multer.File;
+    userId: string;
+  }) {
     const uniqueId = uuidv4();
+    const { name, categoryId, file, userId } = params;
 
     const { error } = await supabase.storage
       .from('documents')
@@ -40,6 +46,8 @@ export class DocumentsService {
       .from('documents')
       .insert([
         {
+          name,
+          category_id: categoryId,
           filename: file.originalname,
           file_id: uniqueId,
           user_id: userId,
@@ -126,19 +134,24 @@ export class DocumentsService {
   /**
    * Retrieves a paginated list of documents from the 'documents' table.
    *
-   * @param index - The page index (zero-based) to fetch.
+   * @param cursor - The page cursor (zero-based) to fetch.
    * @param limit - The number of documents to retrieve per page.
    * @returns A promise that resolves to an array of `Document` instances.
    * @throws Throws an error if the Supabase query fails.
    */
-  async getDocumentList(index: number, limit: number): Promise<Document[]> {
+  async getDocumentListByCategory(
+    categoryId: string,
+    cursor: number,
+    limit: number,
+  ): Promise<Document[]> {
     try {
-      const from = index * limit;
+      const from = cursor * limit;
       const to = from + limit - 1;
 
       const { data, error } = await supabase
         .from('documents')
         .select('*')
+        .eq('category_id', categoryId)
         .range(from, to);
 
       if (error) throw error;

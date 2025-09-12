@@ -3,8 +3,8 @@ import type { Category } from "../types/Category";
 import { createCategoryRequest } from "../api/categoriesApi";
 import { showToast } from "@/lib/toast";
 
-export const useCategory = () => {
-  const createCategory = useMutation({
+export const useCreateCategory = () => {
+  return useMutation({
     mutationFn: async (category: Category) =>
       await createCategoryRequest(category),
     onSuccess: () => {
@@ -14,6 +14,4 @@ export const useCategory = () => {
       showToast(error?.message || "Create category error", "error");
     },
   });
-
-  return { createCategory };
 };

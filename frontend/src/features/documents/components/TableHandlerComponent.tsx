@@ -1,13 +1,14 @@
 import { ClipLoader } from "react-spinners";
 import {
   useDocumentById,
-  useDocumentList,
+  // useDocumentList,
   useExtractDocumentData,
 } from "../hooks/useDocument";
 import { DocumentTable } from "./DocumentTable";
 import { useEffect, useState } from "react";
 import Dialog from "@/components/dialog";
-import CreateCategory from "../../categories/components/CreateCategory";
+// import CreateCategory from "../../categories/components/CreateCategory";
+import CategoryList from "@/features/categories/components/CategoryList";
 
 const TableHandlerComponent = () => {
   const [displayDocument, setDisplayDocument] = useState<string | null>(null);
@@ -17,11 +18,11 @@ const TableHandlerComponent = () => {
     fileId: string;
   } | null>(null);
 
-  const {
-    data: documents,
-    isLoading: isListLoading,
-    error: listError,
-  } = useDocumentList();
+  // const {
+  //   data: documents,
+  //   isLoading: isListLoading,
+  //   error: listError,
+  // } = useDocumentList();
 
   const {
     data: urlDocument,
@@ -71,22 +72,22 @@ const TableHandlerComponent = () => {
     }
   }, [urlDocument]);
 
-  if (isListLoading)
-    return (
-      <div className="w-full h-full flex  justify-center align-middle">
-        <ClipLoader
-          loading={isListLoading}
-          size={50}
-          aria-label="Loading Spinner"
-          data-testid="loader"
-        />
-      </div>
-    );
-  if (listError) return <div>Error: {listError}</div>;
+  // if (isListLoading)
+  //   return (
+  //     <div className="w-full h-full flex  justify-center align-middle">
+  //       <ClipLoader
+  //         loading={isListLoading}
+  //         size={50}
+  //         aria-label="Loading Spinner"
+  //         data-testid="loader"
+  //       />
+  //     </div>
+  //   );
+  // if (listError) return <div>Error: {listError}</div>;
 
   return (
     <div className="w-full max-h-full">
-      <DocumentTable
+      {/* <DocumentTable
         data={documents}
         handleDisplay={handleDisplay}
         handleExtractData={handleExtractData}
@@ -96,7 +97,8 @@ const TableHandlerComponent = () => {
         <Dialog title={"Add category"} toggleOpen={setAddCategory}>
           <CreateCategory toggleOpen={setAddCategory} />
         </Dialog>
-      )}
+      )} */}
+      <CategoryList />
     </div>
   );
 };

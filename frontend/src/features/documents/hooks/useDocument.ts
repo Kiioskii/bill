@@ -2,27 +2,28 @@ import { useQuery } from "@tanstack/react-query";
 import {
   extractDocumentRequest,
   getDocumentByIdRequest,
-  listDocumentsRequest,
+  // listDocumentsByCategoryRequest,
+  // listDocumentsRequest,
 } from "../api/documentsApi";
 
-/**
- * Custom hook to fetch a paginated list of documents.
- *
- * @param index - The starting index for pagination (default is 0).
- * @param limit - The maximum number of documents to fetch (default is 10).
- * @returns An object containing the fetched data, any error encountered, and the loading state.
- *
- * @example
- * const { data, error, isLoading } = useDocumentList(0, 20);
- */
-export const useDocumentList = (index: number = 0, limit: number = 10) => {
-  const { data, error, isLoading } = useQuery({
-    queryKey: ["documents_list", index, limit],
-    queryFn: async () => await listDocumentsRequest(index, limit),
-  });
+// /**
+//  * Custom hook to fetch a paginated list of documents.
+//  *
+//  * @param index - The starting index for pagination (default is 0).
+//  * @param limit - The maximum number of documents to fetch (default is 10).
+//  * @returns An object containing the fetched data, any error encountered, and the loading state.
+//  *
+//  * @example
+//  * const { data, error, isLoading } = useDocumentList(0, 20);
+//  */
+// export const useDocumentList = (index: number = 0, limit: number = 10) => {
+//   const { data, error, isLoading } = useQuery({
+//     queryKey: ["documents_list", index, limit],
+//     queryFn: async () => listDocumentsByCategoryRequest(index, limit),
+//   });
 
-  return { data, error, isLoading };
-};
+//   return { data, error, isLoading };
+// };
 
 /**
  * Custom React hook to fetch a document by its ID using React Query.

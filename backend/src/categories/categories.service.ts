@@ -41,6 +41,11 @@ export class CategoriesService {
         .from('categories')
         .select('*')
         .eq('user_id', userId);
+
+      if (error) {
+        console.log('error', error);
+      }
+
       return data;
     } catch (err: any) {
       this.logger.error('Supabase fetch failed', err);

@@ -8,11 +8,13 @@ import {
   UseInterceptors,
   UseGuards,
   Query,
+  Body,
 } from '@nestjs/common';
 import { DocumentsService } from './documents.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Document } from './documents.entity';
 import { SupabaseJwtGuard } from 'src/auth/supabase-jwt.guard';
+import { CreateDocumentDto } from './dto/create-document-dto';
 @Controller('documents')
 export class DocumentsController {
   constructor(private readonly documentsService: DocumentsService) {}
@@ -22,11 +24,16 @@ export class DocumentsController {
   @UseInterceptors(FileInterceptor('file'))
   async uploadReport(
     @UploadedFile() file: Express.Multer.File,
+    @Body() body: CreateDocumentDto,
     @Req() req: { user: { sub: string } },
   ) {
     const userId = req.user.sub;
-    const document = await this.documentsService.uploadFile(file, userId);
-    return document;
+    return this.documentsService.uploadFile({
+      name: body.name,
+      categoryId: body.categoryId,
+      file,
+      userId,
+    });
   }
 
   @UseGuards(SupabaseJwtGuard)
@@ -59,16 +66,18 @@ export class DocumentsController {
     );
   }
 
-  @Get('list')
+  @Get('listByCategory')
   async listDocuments(
-    @Query('index') index = '0',
+    @Query('categoryId') categoryId = '',
+    @Query('index') cursor = '0',
     @Query('limit') limit = '10',
   ): Promise<Document[]> {
-    const pageIndex = parseInt(index) || 0;
+    const pageCursor = parseInt(cursor) || 0;
     const pageLimit = parseInt(limit) || 10;
 
-    const documentsList = await this.documentsService.getDocumentList(
-      pageIndex,
+    const documentsList = await this.documentsService.getDocumentListByCategory(
+      categoryId,
+      pageCursor,
       pageLimit,
     );
 

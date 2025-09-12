@@ -1,17 +1,25 @@
 import api from "@/api/api";
+import type {
+  CreateDocumentPayload,
+  DocumentPage,
+  UUID,
+} from "../types/Documents";
 
 /**
  * Sends a GET request to retrieve a paginated list of documents.
  *
  * @param index - The starting index for pagination.
- * @param limit - The maximum number of documents to retrieve.
+ * @param cursor - The maximum number of documents to retrieve.
  * @returns A promise that resolves with the response data containing the list of documents.
  */
-export const listDocumentsRequest = async (index: number, limit: number) => {
-  const response = await api.get("documents/list", {
-    params: { index, limit },
+export const listDocumentsByCategoryRequest = async (
+  categoryId: UUID,
+  limit = 50,
+  cursor: string | null = null
+): Promise<DocumentPage> => {
+  return api.get("documents/list", {
+    params: { categoryId, cursor, limit },
   });
-  return response.data;
 };
 
 export const getDocumentByIdRequest = async (fileId: string) => {
@@ -40,13 +48,21 @@ export const extractDocumentRequest = async (params: {
    */
 
   const { fileId, documentId } = params;
-  console.log("------>");
-  console.log("fileId", fileId);
-  console.log("documentId", documentId);
-
   const response = await api.get("documents/extractData", {
     params: { fileId, documentId },
   });
 
+  return response.data;
+};
+
+export const addDocumentRequest = async (
+  data: CreateDocumentPayload
+): Promise<string | Error> => {
+  const formedData = new FormData();
+  formedData.append("name", data.name);
+  formedData.append("categoryId", data.categoryId);
+  formedData.append("file", data.file);
+
+  const response = await api.post("documents/upload", formedData);
   return response.data;
 };
