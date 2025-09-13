@@ -162,6 +162,7 @@ export class DocumentsService {
         doc.userId = d.user_id;
         doc.filename = d.filename;
         doc.fileId = d.file_id;
+        doc.name = d.name;
         doc.createdAt = new Date(d.created_at); // jeśli jest w stringu
         return doc;
       });

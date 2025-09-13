@@ -12,6 +12,8 @@ export class Document {
 
   @Column()
   userId: string;
+  @Column()
+  name: string;
 
   @Column()
   filename: string;

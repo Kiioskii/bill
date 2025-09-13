@@ -17,9 +17,11 @@ export const listDocumentsByCategoryRequest = async (
   limit = 50,
   cursor: string | null = null
 ): Promise<DocumentPage> => {
-  return api.get("documents/list", {
+  const response = await api.get("documents/listByCategory", {
     params: { categoryId, cursor, limit },
   });
+
+  return response.data;
 };
 
 export const getDocumentByIdRequest = async (fileId: string) => {

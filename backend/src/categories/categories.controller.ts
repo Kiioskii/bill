@@ -33,7 +33,6 @@ export class CategoriesController {
   @UseGuards(SupabaseJwtGuard)
   @Get('list')
   async getCategoryList(@Req() req) {
-    console.log('hereee');
     const userId = req.user.sub as string;
     const categoryList = await this.categoriesService.getCategoryList(userId);
 
