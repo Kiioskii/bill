@@ -19,3 +19,9 @@ export type CreateDocumentPayload = {
   categoryId: string;
   file: File;
 };
+
+export type EditDocumentData = {
+  documentId: string;
+  column: string;
+  value: string;
+};

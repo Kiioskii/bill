@@ -34,5 +34,9 @@ module.exports = {
     "border-pink-500",
     "border-gray-500",
     "border-black",
+    {
+      pattern:
+        /(bg|hover:bg)-(red|blue|green|orange|purple|pink)-(100|200|300|400|500|600|700|800|900)\/(0|5|10|20|25|30|40|50|60|70|75|80|90|95|100)/,
+    },
   ],
 };

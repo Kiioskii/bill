@@ -2,6 +2,7 @@ import api from "@/api/api";
 import type {
   CreateDocumentPayload,
   DocumentPage,
+  EditDocumentData,
   UUID,
 } from "../types/Documents";
 
@@ -66,5 +67,18 @@ export const addDocumentRequest = async (
   formedData.append("file", data.file);
 
   const response = await api.post("documents/upload", formedData);
+  return response.data;
+};
+
+export const editDocumentRequest = async (
+  data: EditDocumentData
+): Promise<string | Error> => {
+  const { column, value, documentId } = data;
+
+  const response = await api.patch("documents/edit", {
+    documentId,
+    column,
+    value,
+  });
   return response.data;
 };

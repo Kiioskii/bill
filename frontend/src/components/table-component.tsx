@@ -7,6 +7,7 @@ import {
 import { useState } from "react";
 
 const TableComponent = ({ data, columns, color }) => {
+  console.log(color);
   const [rowSelection, setRowSelection] = useState({});
 
   console.log("rowSelection", rowSelection);
@@ -43,20 +44,16 @@ const TableComponent = ({ data, columns, color }) => {
       </thead>
       <tbody>
         {table.getRowModel().rows.map((row) => {
-          console.log("row", row, row.getIsSelected());
           return (
             <tr
               key={row.id}
               className={cn(
-                "cursor-pointer hover:bg-gray-50/10",
-                row.getIsSelected() && color && `bg-${color}`
+                "cursor-pointer transition hover:brightness-95 border-b",
+                row.getIsSelected() && `bg-indigo-300/20 border-b-indigo-500` // np. bg-orange-500/30
               )}
             >
               {row.getVisibleCells().map((cell) => (
-                <td
-                  key={cell.id}
-                  className="p-2  capitalize text-start border-b text-xs"
-                >
+                <td key={cell.id} className="p-2 capitalize text-start text-xs">
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}
                 </td>
               ))}

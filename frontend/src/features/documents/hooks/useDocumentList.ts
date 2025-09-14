@@ -11,7 +11,7 @@ export const useDocumentList = (
 ) => {
   const pageSize = opts?.pageSize ?? 50;
   return useInfiniteQuery<DocumentPage, Error>({
-    queryKey: ["categoryDocument", categoryId],
+    queryKey: ["category_document", categoryId],
     queryFn: ({ pageParam = null }) =>
       listDocumentsByCategoryRequest(categoryId, pageSize, pageParam),
     enabled: opts?.enabled ?? true,

@@ -9,7 +9,7 @@ const CategoryRow = ({ item, addNewDocumentHandler }) => {
   const [showTable, setShowTable] = useState<boolean>(false);
 
   return (
-    <>
+    <div className="w-full h-fit flex flex-col mb-3">
       <div className="w-full gap-1 h-8 flex justify-start items-center text-gray-400 mb-2">
         <div
           className="w-8 h-full rounded-md hover:bg-gray-100 flex justify-center items-center cursor-pointer"
@@ -53,7 +53,7 @@ const CategoryRow = ({ item, addNewDocumentHandler }) => {
       {showTable && (
         <DocumentsByCategoryTable categoryId={item.id} color={item.color} />
       )}
-    </>
+    </div>
   );
 };
 

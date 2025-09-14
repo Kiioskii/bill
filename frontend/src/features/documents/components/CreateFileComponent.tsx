@@ -27,7 +27,8 @@ const CreateFileComponent = ({
   const [name, setName] = useState<string>("");
   const [category, setCategory] = useState<string | null>(categoryId);
   const [file, setFile] = useState<File | null>(null);
-  const { mutate: createDocument } = useCreateDocument();
+  const { mutate: createDocument, isPending: createIsPending } =
+    useCreateDocument();
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -103,7 +104,9 @@ const CreateFileComponent = ({
         />
       </div>
 
-      <Button type="submit">Add file</Button>
+      <Button type="submit">
+        {createIsPending ? "Uploading ..." : "Add file"}
+      </Button>
     </form>
   );
 };

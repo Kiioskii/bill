@@ -4,9 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { IoMdClose } from "react-icons/io";
 import ColorSelector from "./ColorSelector";
-// import { useCategory } from "../hooks/useCategoryList";
+import { useCreateCategory } from "../hooks/useCreateCategory";
 
-const CreateCategory = ({ toggleOpen }) => {
+const CreateCategoryComponent = ({ toggleOpen }) => {
   const [name, setName] = useState<string>("");
   const [color, setColor] = useState<string>("blue-500");
   const [selectedIcon, setSelectedIcon] = useState<string | null>(null);
@@ -15,7 +15,7 @@ const CreateCategory = ({ toggleOpen }) => {
 
   const allIcons = Object.keys(FaIcons);
 
-  // const { createCategory } = useCategory();
+  const createCategory = useCreateCategory();
 
   const handleSelectIcon = (iconName: string) => {
     setSelectedIcon(iconName);
@@ -24,18 +24,18 @@ const CreateCategory = ({ toggleOpen }) => {
 
   const handleCreateCategory = () => {
     if (!name || !color || !selectedIcon) return;
-    // createCategory.mutate(
-    //   {
-    //     name,
-    //     color,
-    //     icon: selectedIcon,
-    //   },
-    //   {
-    //     onSuccess: () => {
-    //       toggleOpen();
-    //     },
-    //   }
-    // );
+    createCategory.mutate(
+      {
+        name,
+        color,
+        icon: selectedIcon,
+      },
+      {
+        onSuccess: () => {
+          toggleOpen();
+        },
+      }
+    );
   };
 
   return (
@@ -118,4 +118,4 @@ const CreateCategory = ({ toggleOpen }) => {
   );
 };
 
-export default CreateCategory;
+export default CreateCategoryComponent;
