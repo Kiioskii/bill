@@ -2,20 +2,25 @@ import { cn } from "@/lib/utils";
 import {
   flexRender,
   getCoreRowModel,
+  getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
 import { useState } from "react";
+import { FaSort, FaSortDown, FaSortUp } from "react-icons/fa6";
 
 const TableComponent = ({ data, columns, color, hoverRow }) => {
   const [rowSelection, setRowSelection] = useState({});
+  const [sorting, setSorting] = useState([]);
 
   const table = useReactTable({
     data,
     columns,
-    state: { rowSelection },
+    state: { rowSelection, sorting },
     onRowSelectionChange: setRowSelection,
+    onSortingChange: setSorting,
     enableRowSelection: true,
     getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
   });
 
   return (
@@ -27,14 +32,26 @@ const TableComponent = ({ data, columns, color, hoverRow }) => {
               <th
                 key={header.id}
                 style={{ width: header.getSize() }}
+                onClick={header.column.getToggleSortingHandler()}
                 className="p-2 text-gray-400 capitalize text-start hover:bg-gray-50 cursor-pointer h-5 text-xs "
               >
-                {header.isPlaceholder
-                  ? null
-                  : flexRender(
-                      header.column.columnDef.header,
-                      header.getContext()
+                {flexRender(
+                  header.column.columnDef.header,
+                  header.getContext()
+                )}
+                {header.column.getCanSort() && (
+                  <>
+                    {header.column.getIsSorted() === "asc" && (
+                      <FaSortUp className="inline ml-1" />
                     )}
+                    {header.column.getIsSorted() === "desc" && (
+                      <FaSortDown className="inline ml-1" />
+                    )}
+                    {!header.column.getIsSorted() && (
+                      <FaSort className="inline ml-1 text-gray-300" />
+                    )}
+                  </>
+                )}
               </th>
             ))}
           </tr>
@@ -57,7 +74,7 @@ const TableComponent = ({ data, columns, color, hoverRow }) => {
                 <td
                   key={cell.id}
                   style={{ width: cell.column.getSize() }}
-                  className="p-2 capitalize text-start text-xs"
+                  className="h-8 px-2 capitalize text-start text-xs"
                 >
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}
                 </td>

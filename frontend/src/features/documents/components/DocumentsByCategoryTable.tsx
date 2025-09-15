@@ -9,7 +9,7 @@ import { useState } from "react";
 import { useEditDocument } from "../hooks/useEditDocument";
 import { showToast } from "@/lib/toast";
 import { FaPencilAlt } from "react-icons/fa";
-
+import { PiPencil } from "react-icons/pi";
 const columnHelper = createColumnHelper();
 const getColumns = (
   color,
@@ -83,15 +83,15 @@ const getColumns = (
                 <p>{value}</p>
               </div>
             )}
-            {rowId === hoverRowId && (
+            {rowId === hoverRowId && !editingRowId && (
               <div
                 onClick={() => {
                   setEditingRowId(rowId);
                   setEditingValue(value);
                 }}
-                className="border rounded hover:bg-gray-100 h-full w-6 bg-white flex items-center justify-center shadow text-gray-400"
+                className="border rounded hover:bg-gray-100 h-6 w-7 bg-white flex items-center justify-center shadow text-gray-400"
               >
-                <FaPencilAlt />
+                <FaPencilAlt size={12} />
               </div>
             )}
           </span>
