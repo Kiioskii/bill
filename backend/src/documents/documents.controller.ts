@@ -9,12 +9,17 @@ import {
   UseGuards,
   Query,
   Body,
+  Patch,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import { DocumentsService } from './documents.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Document } from './documents.entity';
 import { SupabaseJwtGuard } from 'src/auth/supabase-jwt.guard';
 import { CreateDocumentDto } from './dto/create-document-dto';
+import { EditDocumentDto } from './dto/edit-document-dto';
+import { User } from 'src/auth/auth.decorator';
 @Controller('documents')
 export class DocumentsController {
   constructor(private readonly documentsService: DocumentsService) {}
@@ -25,9 +30,8 @@ export class DocumentsController {
   async uploadReport(
     @UploadedFile() file: Express.Multer.File,
     @Body() body: CreateDocumentDto,
-    @Req() req: { user: { sub: string } },
+    @User('sub') userId: string,
   ) {
-    const userId = req.user.sub;
     return this.documentsService.uploadFile({
       name: body.name,
       categoryId: body.categoryId,
@@ -39,10 +43,9 @@ export class DocumentsController {
   @UseGuards(SupabaseJwtGuard)
   @Get('getById')
   async getDocument(
+    @User('sub') userId: string,
     @Query('fileId') fileId: string,
-    @Req() req: { user: { sub: string } },
   ): Promise<string | null> {
-    const userId = req.user.sub;
     const url = await this.documentsService.getDocumentById(userId, fileId);
     if (!url) throw new Error('Document not found');
 
@@ -54,11 +57,9 @@ export class DocumentsController {
   async extractData(
     @Query('fileId') fileId: string,
     @Query('documentId') documentId: string,
-    @Req()
-    req: { user: { sub: string } },
+    @User('sub')
+    userId: string,
   ) {
-    const userId = req.user.sub;
-
     await this.documentsService.extractDataFromDocument(
       userId,
       fileId,
@@ -86,5 +87,22 @@ export class DocumentsController {
     }
 
     return documentsList;
+  }
+
+  @UseGuards(SupabaseJwtGuard)
+  @Patch('edit')
+  async editDocument(
+    @User('sub') userId: string,
+    @Body() dto: EditDocumentDto,
+  ) {
+    try {
+      const editResponse = await this.documentsService.editDocument({
+        userId,
+        ...dto,
+      });
+      return editResponse;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+    }
   }
 }

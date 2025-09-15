@@ -16,5 +16,9 @@ export const useEditDocument = () => {
       ]);
       showToast("Data updated successfully", "success");
     },
+    onError: (error: Error) => {
+      // console.log("  edit error", error);
+      showToast(error.message, "error");
+    },
   });
 };

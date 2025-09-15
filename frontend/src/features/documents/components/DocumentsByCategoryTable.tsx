@@ -6,9 +6,9 @@ import { FaRegCircleDot } from "react-icons/fa6";
 import { cn } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useState } from "react";
-import { Input } from "@/components/ui/input";
 import { useEditDocument } from "../hooks/useEditDocument";
 import { showToast } from "@/lib/toast";
+import { FaPencilAlt } from "react-icons/fa";
 
 const columnHelper = createColumnHelper();
 const getColumns = (
@@ -17,7 +17,8 @@ const getColumns = (
   editingRowId,
   setEditingRowId,
   editingValue,
-  setEditingValue
+  setEditingValue,
+  hoverRowId
 ) => {
   return [
     {
@@ -39,37 +40,32 @@ const getColumns = (
           )}
         />
       ),
-      size: 40,
+      size: 20,
     },
     columnHelper.accessor("name", {
       cell: (info) => {
         const rowId = info.row.id;
+        const dbRowId = info.row.original.id;
         const value = info.getValue();
 
         return (
-          <span
-            className="flex items-center gap-2 border"
-            onClick={() => {
-              setEditingRowId(rowId);
-              setEditingValue(value);
-            }}
-          >
+          <span className="flex items-center gap-2 ">
             <div className="p-1 rounded-md hover:bg-gray-100 cursor-pointer">
               <FaRegCircleDot className={cn("", color && `text-${color}`)} />
             </div>
             {rowId === editingRowId ? (
               <input
-                className="focus:ring-0 focus:text-indigo-500 outline-none w-fit"
+                className="focus:ring-0 focus:text-indigo-500 outline-none w-full "
                 value={editingValue}
                 autoFocus
                 onChange={(e) => setEditingValue(e.target.value)}
                 onBlur={() => {
-                  editNameHandler(rowId, editingValue);
+                  editNameHandler(dbRowId, editingValue);
                   setEditingRowId(null);
                 }}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
-                    editNameHandler(rowId, editingValue);
+                    editNameHandler(dbRowId, editingValue);
                     setEditingRowId(null);
                   }
                   if (e.key === "Escape") {
@@ -79,9 +75,23 @@ const getColumns = (
               />
             ) : (
               <div
-                className={cn("cursor-pointer", color && `hover:text-${color}`)}
+                className={cn(
+                  "w-full cursor-pointer overflow-hidden whitespace-nowrap text-ellipsis",
+                  rowId === hoverRowId && `hover:text-indigo-500`
+                )}
               >
-                {value}
+                <p>{value}</p>
+              </div>
+            )}
+            {rowId === hoverRowId && (
+              <div
+                onClick={() => {
+                  setEditingRowId(rowId);
+                  setEditingValue(value);
+                }}
+                className="border rounded hover:bg-gray-100 h-full w-6 bg-white flex items-center justify-center shadow text-gray-400"
+              >
+                <FaPencilAlt />
               </div>
             )}
           </span>
@@ -91,6 +101,7 @@ const getColumns = (
     }),
     columnHelper.accessor("filename", {
       cell: (info) => info.getValue(),
+      size: 80,
     }),
     columnHelper.accessor("createdAt", {
       cell: (info) => (
@@ -109,6 +120,7 @@ const DocumentsByCategoryTable = ({
 }) => {
   const [editingRowId, setEditingRowId] = useState<string | null>(null);
   const [editingValue, setEditingValue] = useState<string | null>(null);
+  const [hoverRowId, setHoverRowId] = useState(false);
 
   const { mutate: editDocument } = useEditDocument();
 
@@ -130,15 +142,14 @@ const DocumentsByCategoryTable = ({
     editingRowId,
     setEditingRowId,
     editingValue,
-    setEditingValue
+    setEditingValue,
+    hoverRowId
   );
 
   const { data, error, isFetching, fetchNextPage, hasNextPage } =
     useDocumentList(categoryId);
-  const documents = data?.pages.flatMap((page) => page) ?? [];
 
-  console.log("data", data);
-  console.log("documents", documents);
+  const documents = data?.pages.flatMap((page) => page) ?? [];
 
   return (
     <div>
@@ -150,7 +161,12 @@ const DocumentsByCategoryTable = ({
           </div>
         </div>
       ) : (
-        <TableComponent columns={columns} data={documents} color={color} />
+        <TableComponent
+          columns={columns}
+          data={documents}
+          color={color}
+          hoverRow={setHoverRowId}
+        />
       )}
     </div>
   );

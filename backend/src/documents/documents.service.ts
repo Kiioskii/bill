@@ -173,4 +173,28 @@ export class DocumentsService {
       throw err;
     }
   }
+
+  async editDocument(dto: {
+    userId: string;
+    documentId: string;
+    column: string;
+    value: string;
+  }) {
+    const { userId, documentId, column, value } = dto;
+    try {
+      const { data, error } = await supabase
+        .from('documents')
+        .update({ [column]: value })
+        .eq('user_id', userId)
+        .eq('id', documentId);
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      return data;
+    } catch (err: any) {
+      throw new Error(err);
+    }
+  }
 }

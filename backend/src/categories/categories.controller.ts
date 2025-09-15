@@ -10,6 +10,7 @@ import {
 } from '@nestjs/common';
 import { CategoriesService } from './categories.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
+import { User } from 'src/auth/auth.decorator';
 
 @Controller('categories')
 export class CategoriesController {
@@ -17,8 +18,10 @@ export class CategoriesController {
 
   @UseGuards(SupabaseJwtGuard)
   @Post('create')
-  async createCategory(@Req() req, @Body() dto: CreateCategoryDto) {
-    const userId = req.user.sub as string;
+  async createCategory(
+    @User('sub') userId: string,
+    @Body() dto: CreateCategoryDto,
+  ) {
     const newCategory = await this.categoriesService.addCategory({
       userId,
       ...dto,
@@ -32,8 +35,7 @@ export class CategoriesController {
 
   @UseGuards(SupabaseJwtGuard)
   @Get('list')
-  async getCategoryList(@Req() req) {
-    const userId = req.user.sub as string;
+  async getCategoryList(@User('sub') userId: string) {
     const categoryList = await this.categoriesService.getCategoryList(userId);
 
     return categoryList;

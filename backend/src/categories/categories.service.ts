@@ -26,8 +26,6 @@ export class CategoriesService {
         .select()
         .single();
 
-      console.log('errr', error);
-
       return data;
     } catch (err: any) {
       this.logger.error('Supabase fetch failed', err);

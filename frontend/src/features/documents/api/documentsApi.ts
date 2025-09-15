@@ -72,13 +72,23 @@ export const addDocumentRequest = async (
 
 export const editDocumentRequest = async (
   data: EditDocumentData
-): Promise<string | Error> => {
+): Promise<string> => {
+  console.log("EDIT DATA", data);
+
   const { column, value, documentId } = data;
 
-  const response = await api.patch("documents/edit", {
-    documentId,
-    column,
-    value,
-  });
-  return response.data;
+  try {
+    const response = await api.patch("documents/edit", {
+      documentId,
+      column,
+      value,
+    });
+
+    return response.data;
+  } catch (err: any) {
+    console.log("ERRRORR ERRROR:", err);
+    const message =
+      err.response?.data?.message || err.message || "Unknown error";
+    throw new Error(message);
+  }
 };
