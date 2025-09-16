@@ -9,15 +9,35 @@ import { useState } from "react";
 import { useEditDocument } from "../hooks/useEditDocument";
 import { showToast } from "@/lib/toast";
 import { FaPencilAlt } from "react-icons/fa";
-import { PiPencil } from "react-icons/pi";
+import { BsThreeDots } from "react-icons/bs";
+import { CiCirclePlus } from "react-icons/ci";
+import { minSize } from "zod";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuPortal,
+  DropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import type { Button } from "@/components/ui/button";
+import { OptionsMenu } from "./OptionsMenu";
 const columnHelper = createColumnHelper();
 const getColumns = (
-  color,
-  editNameHandler,
+  color: string,
+  editNameHandler: string,
   editingRowId,
   setEditingRowId,
   editingValue,
   setEditingValue,
+  optionsRowId,
+  setOptionsRowId,
   hoverRowId
 ) => {
   return [
@@ -89,7 +109,7 @@ const getColumns = (
                   setEditingRowId(rowId);
                   setEditingValue(value);
                 }}
-                className="border rounded hover:bg-gray-100 h-6 w-7 bg-white flex items-center justify-center shadow text-gray-400"
+                className="border rounded-sm hover:bg-gray-100 h-6 w-7 bg-white flex items-center justify-center shadow text-gray-400"
               >
                 <FaPencilAlt size={12} />
               </div>
@@ -101,12 +121,34 @@ const getColumns = (
     }),
     columnHelper.accessor("filename", {
       cell: (info) => info.getValue(),
-      size: 80,
+      size: 50,
+    }),
+    columnHelper.accessor("options", {
+      header: (info) => (
+        <div className="w-full flex justify-center">
+          <CiCirclePlus size={20} className="font-extrabold" />
+        </div>
+      ),
+      cell: (info) => {
+        const rowId = info.row.id;
+
+        return (
+          <OptionsMenu
+            rowId={rowId}
+            optionsRowId={optionsRowId}
+            setOptionsRowId={setOptionsRowId}
+          />
+        );
+      },
+      meta: { className: "text-center  justify-center " },
+      enableSorting: false,
+      size: 10,
     }),
     columnHelper.accessor("createdAt", {
       cell: (info) => (
         <div>{new Date(info.getValue()).toLocaleString("pl-PL")}</div>
       ),
+      // size: 30,
     }),
   ];
 };
@@ -120,6 +162,7 @@ const DocumentsByCategoryTable = ({
 }) => {
   const [editingRowId, setEditingRowId] = useState<string | null>(null);
   const [editingValue, setEditingValue] = useState<string | null>(null);
+  const [optionsRowId, setOptionsRowId] = useState<string | null>(null);
   const [hoverRowId, setHoverRowId] = useState(false);
 
   const { mutate: editDocument } = useEditDocument();
@@ -143,6 +186,8 @@ const DocumentsByCategoryTable = ({
     setEditingRowId,
     editingValue,
     setEditingValue,
+    optionsRowId,
+    setOptionsRowId,
     hoverRowId
   );
 

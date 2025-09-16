@@ -33,7 +33,11 @@ const TableComponent = ({ data, columns, color, hoverRow }) => {
                 key={header.id}
                 style={{ width: header.getSize() }}
                 onClick={header.column.getToggleSortingHandler()}
-                className="p-2 text-gray-400 capitalize text-start hover:bg-gray-50 cursor-pointer h-5 text-xs "
+                className={cn(
+                  "p-2 text-gray-400 capitalize text-start hover:bg-gray-50 cursor-pointer h-5 text-xs",
+                  header.column.columnDef.meta?.className ??
+                    `${header.column.columnDef.meta?.className}`
+                )}
               >
                 {flexRender(
                   header.column.columnDef.header,
@@ -47,7 +51,8 @@ const TableComponent = ({ data, columns, color, hoverRow }) => {
                     {header.column.getIsSorted() === "desc" && (
                       <FaSortDown className="inline ml-1" />
                     )}
-                    {!header.column.getIsSorted() && (
+                    {(!header.column.getCanSort() ||
+                      !header.column.getIsSorted()) && (
                       <FaSort className="inline ml-1 text-gray-300" />
                     )}
                   </>
@@ -74,7 +79,11 @@ const TableComponent = ({ data, columns, color, hoverRow }) => {
                 <td
                   key={cell.id}
                   style={{ width: cell.column.getSize() }}
-                  className="h-8 px-2 capitalize text-start text-xs"
+                  className={cn(
+                    "h-8 px-2 capitalize text-start text-xs ",
+                    cell.column.columnDef.meta?.className ??
+                      `${cell.column.columnDef.meta?.className}`
+                  )}
                 >
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}
                 </td>
