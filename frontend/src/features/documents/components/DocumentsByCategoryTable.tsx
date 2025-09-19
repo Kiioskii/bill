@@ -11,23 +11,11 @@ import { showToast } from "@/lib/toast";
 import { FaPencilAlt } from "react-icons/fa";
 import { BsThreeDots } from "react-icons/bs";
 import { CiCirclePlus } from "react-icons/ci";
-import { minSize } from "zod";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuPortal,
-  DropdownMenuSeparator,
-  DropdownMenuShortcut,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import type { Button } from "@/components/ui/button";
+import { LuNotebookPen } from "react-icons/lu";
+import { FaQuestion } from "react-icons/fa6";
 import { OptionsMenu } from "./OptionsMenu";
+import { useAppDispatch } from "@/app/store";
+import { addFile, removeFile } from "../model/documentsSlice";
 const columnHelper = createColumnHelper();
 const getColumns = (
   color: string,
@@ -38,7 +26,8 @@ const getColumns = (
   setEditingValue,
   optionsRowId,
   setOptionsRowId,
-  hoverRowId
+  hoverRowId,
+  dispatch
 ) => {
   return [
     {
@@ -50,16 +39,27 @@ const getColumns = (
           aria-label="Select all"
         />
       ),
-      cell: ({ row }) => (
-        <Checkbox
-          checked={row.getIsSelected()}
-          onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label="Select row"
-          className={cn(
-            "data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600 data-[state=checked]:text-white"
-          )}
-        />
-      ),
+      cell: ({ row }) => {
+        const id = row.original.id;
+        const name = row.original.name;
+        return (
+          <Checkbox
+            checked={row.getIsSelected()}
+            onCheckedChange={(value) => {
+              row.toggleSelected(!!value);
+              if (value) {
+                dispatch(addFile({ id, name }));
+              } else {
+                dispatch(removeFile({ id, name }));
+              }
+            }}
+            aria-label="Select row"
+            className={cn(
+              "data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600 data-[state=checked]:text-white"
+            )}
+          />
+        );
+      },
       size: 20,
     },
     columnHelper.accessor("name", {
@@ -123,6 +123,15 @@ const getColumns = (
       cell: (info) => info.getValue(),
       size: 50,
     }),
+    columnHelper.accessor("note", {
+      cell: (info) => (
+        <div className="p-1 rounded-sm w-fit flex flex-row gap-2 justify-between items-center hover:bg-gray-200 mx-auto">
+          <LuNotebookPen /> Create notes
+        </div>
+      ),
+      meta: { className: "text-center  justify-center " },
+      size: 50,
+    }),
     columnHelper.accessor("options", {
       header: (info) => (
         <div className="w-full flex justify-center">
@@ -160,6 +169,7 @@ const DocumentsByCategoryTable = ({
   categoryId: string;
   color: string;
 }) => {
+  const dispatch = useAppDispatch();
   const [editingRowId, setEditingRowId] = useState<string | null>(null);
   const [editingValue, setEditingValue] = useState<string | null>(null);
   const [optionsRowId, setOptionsRowId] = useState<string | null>(null);
@@ -188,7 +198,8 @@ const DocumentsByCategoryTable = ({
     setEditingValue,
     optionsRowId,
     setOptionsRowId,
-    hoverRowId
+    hoverRowId,
+    dispatch
   );
 
   const { data, error, isFetching, fetchNextPage, hasNextPage } =
