@@ -4,7 +4,7 @@ import type { ChatCompletionMessageParam } from 'openai/resources/chat/completio
 import { createByModelName } from '@microsoft/tiktokenizer';
 import { Logger } from '@nestjs/common';
 
-export class Tokenizer {
+export class OpenAIService {
   private readonly logger = new Logger(OpenAIService.name);
   private openai: OpenAI;
   private tokenizers: Map<

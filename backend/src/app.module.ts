@@ -8,6 +8,8 @@ import { MulterModule } from '@nestjs/platform-express';
 import { CategoriesController } from './categories/categories.controller';
 import { CategoriesService } from './categories/categories.service';
 import { CategoriesModule } from './categories/categories.module';
+import { QuizzesController } from './quizzes/quizzes.controller';
+import { QuizzesModule } from './quizzes/quizzes.module';
 import * as multer from 'multer';
 
 @Module({
@@ -21,8 +23,9 @@ import * as multer from 'multer';
       storage: multer.memoryStorage(),
     }),
     CategoriesModule,
+    QuizzesModule,
   ],
-  controllers: [AppController, DocumentsController, CategoriesController],
+  controllers: [AppController, DocumentsController, CategoriesController, QuizzesController],
   providers: [AppService, CategoriesService],
 })
 export class AppModule {}
