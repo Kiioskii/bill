@@ -6,9 +6,11 @@ import CreateFileComponent from "@/features/documents/components/CreateFileCompo
 import CategoryRow from "./CategoryRow";
 import { Button } from "@/components/ui/button";
 import CreateCategory from "./CreateCategoryComponent";
+import CreateQuizComponent from "@/features/quizzes/components/CreateQuizComponent";
 
 const CategoryList = () => {
   const [addCategory, setAddCategory] = useState<boolean>(false);
+  const [createQuiz, setCreateQuiz] = useState<boolean>(false);
   const [openNewFileDialog, setOpenNewFileDialog] = useState<boolean | string>(
     false
   );
@@ -54,6 +56,12 @@ const CategoryList = () => {
       {addCategory && (
         <Dialog title={"Add category"} toggleOpen={setAddCategory}>
           <CreateCategory toggleOpen={setAddCategory} />
+        </Dialog>
+      )}
+
+      {createQuiz && (
+        <Dialog title={"Create quiz"} toggleOpen={setCreateQuiz}>
+          <CreateQuizComponent />
         </Dialog>
       )}
 

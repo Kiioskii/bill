@@ -16,6 +16,10 @@ import { FaQuestion } from "react-icons/fa6";
 import { OptionsMenu } from "./OptionsMenu";
 import { useAppDispatch } from "@/app/store";
 import { addFile, removeFile } from "../model/documentsSlice";
+import {
+  openCreatePanel,
+  closeCreatePanel,
+} from "@/features/quizzes/models/quizzesSlice";
 const columnHelper = createColumnHelper();
 const getColumns = (
   color: string,
@@ -129,6 +133,25 @@ const getColumns = (
           <LuNotebookPen /> Create notes
         </div>
       ),
+      meta: { className: "text-center  justify-center " },
+      size: 50,
+    }),
+    columnHelper.accessor("quiz", {
+      cell: (info) => {
+        const dbRow = info.row.original;
+        console.log("dbrow", dbRow);
+
+        return (
+          <div
+            onClick={() => {
+              dispatch(openCreatePanel());
+            }}
+            className="p-1 rounded-sm w-fit flex flex-row gap-2 justify-between items-center hover:bg-gray-200 mx-auto"
+          >
+            <FaQuestion /> Create quiz
+          </div>
+        );
+      },
       meta: { className: "text-center  justify-center " },
       size: 50,
     }),
