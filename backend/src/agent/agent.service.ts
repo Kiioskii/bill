@@ -4,8 +4,8 @@ import type { ChatCompletionMessageParam } from 'openai/resources/chat/completio
 import { createByModelName } from '@microsoft/tiktokenizer';
 import { Logger } from '@nestjs/common';
 
-export class OpenAIService {
-  private readonly logger = new Logger(OpenAIService.name);
+export class AgentService {
+  private readonly logger = new Logger(AgentService.name);
   private openai: OpenAI;
   private tokenizers: Map<
     string,
@@ -80,5 +80,77 @@ export class OpenAIService {
       this.logger.error('Error in OpenAI completion:', error);
       throw error;
     }
+  }
+
+  async chunkTextByTokens(
+    text: string,
+    model: string = 'gpt-4o',
+    maxTokens: number = 1000,
+    overlap: number = 200,
+  ) {
+    const tokenizer = await this.getTokenizer(model);
+    const tokens = tokenizer.encode(text);
+    const chunks: string[] = [];
+
+    let start = 0;
+    while (start < tokens.length) {
+      const end = Math.min(start + maxTokens, tokens.length);
+      const chunkTokens = tokens.slice(start, end);
+      const chunk = tokenizer.decode(chunkTokens);
+      chunks.push(chunk);
+      start += maxTokens - overlap;
+    }
+
+    return chunks;
+  }
+
+  async quizPrompt(fileArr: string[], sectionsCount: number) {
+    const messages: ChatCompletionMessageParam[] = [
+      {
+        role: 'system',
+        content: `
+ <prompt_objective>
+Generate a quiz based on the provided files.  
+The quiz should consist of a specified number of sections.  
+Each section must include one question and four possible answers, with exactly one correct answer and three incorrect ones.  
+</prompt_objective>
+
+<prompt_rules>
+- All questions and answers must be strictly based on the content of the files.  
+- Do not invent or add information that is not present in the files.  
+- The correct answer must be directly supported by the files.  
+- The three incorrect answers should be plausible but factually incorrect according to the files.  
+- The number of quiz sections must exactly match the parameter 'sectionsCount'.  
+- Questions and answers must be generated in the language specified in the notes.  
+- The output must follow this JSON format:  
+
+{
+  "quiz": [
+    {
+      "question": "Question text 1",
+      "answers": [
+        { "text": "Answer A", "correct": false },
+        { "text": "Answer B", "correct": true },
+        { "text": "Answer C", "correct": false },
+        { "text": "Answer D", "correct": false }
+      ]
+    }
+  ]
+}
+</prompt_rules>
+
+<context>
+Input parameters:  
+- files:
+${fileArr.map((file, idx) => `File ${idx + 1}:\n${file}`).join('\n\n')}
+- sectionsCount: ${sectionsCount}   
+</context>
+  `,
+      },
+    ];
+
+    const tokens = await this.countTokens(messages, 'gpt-4o');
+    this.logger.log(`Prompt uses ${tokens} tokens`);
+    return messages;
   }
 }
