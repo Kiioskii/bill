@@ -1,6 +1,7 @@
 export type CreateQuizPayload = {
   title: string;
-  description: string;
   fileIds: number[];
-  sectionsCount: number;
+  difficulty: string;
+  description: string;
+  questionsCount: string;
 };

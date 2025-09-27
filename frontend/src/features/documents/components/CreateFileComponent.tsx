@@ -33,7 +33,7 @@ const CreateFileComponent = ({
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
 
-    if (!name || !category || !file) {
+    if (!name.trim() || !category || !file) {
       showToast("All fields are required", "error");
       return;
     }

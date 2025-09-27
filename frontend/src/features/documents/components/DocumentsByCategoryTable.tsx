@@ -17,8 +17,8 @@ import { OptionsMenu } from "./OptionsMenu";
 import { useAppDispatch } from "@/app/store";
 import { addFile, removeFile } from "../model/documentsSlice";
 import {
-  openCreatePanel,
-  closeCreatePanel,
+  displayCreatePanel,
+  selectFiles,
 } from "@/features/quizzes/models/quizzesSlice";
 const columnHelper = createColumnHelper();
 const getColumns = (
@@ -138,13 +138,13 @@ const getColumns = (
     }),
     columnHelper.accessor("quiz", {
       cell: (info) => {
-        const dbRow = info.row.original;
-        console.log("dbrow", dbRow);
+        const fileId: string = info?.row?.original?.fileId;
 
         return (
           <div
             onClick={() => {
-              dispatch(openCreatePanel());
+              dispatch(selectFiles(fileId));
+              dispatch(displayCreatePanel(true));
             }}
             className="p-1 rounded-sm w-fit flex flex-row gap-2 justify-between items-center hover:bg-gray-200 mx-auto"
           >

@@ -14,15 +14,23 @@ const quizzesSlice = createSlice({
   name: "quiz",
   initialState,
   reducers: {
-    openCreatePanel: (state, action) => {
-      state.isOpen = true;
-      state.fileIds = 
+    displayCreatePanel: (state, action) => {
+      const display = action.payload;
+      state.isOpen = display;
     },
-    closeCreatePanel: (state) => {
-      state.isOpen = false;
+    selectFiles: (state, action) => {
+      if (typeof action.payload === "object") {
+        state.fileIds.push(...action.payload);
+      } else {
+        state.fileIds.push(action.payload);
+      }
+    },
+    removeFiles: (state) => {
+      state.fileIds = [];
     },
   },
 });
 
-export const { openCreatePanel, closeCreatePanel } = quizzesSlice.actions;
+export const { displayCreatePanel, selectFiles, removeFiles } =
+  quizzesSlice.actions;
 export default quizzesSlice.reducer;

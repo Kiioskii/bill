@@ -7,10 +7,14 @@ import CategoryRow from "./CategoryRow";
 import { Button } from "@/components/ui/button";
 import CreateCategory from "./CreateCategoryComponent";
 import CreateQuizComponent from "@/features/quizzes/components/CreateQuizComponent";
+import { useAppDispatch, useAppSelector } from "@/app/store";
+import { displayCreatePanel } from "@/features/quizzes/models/quizzesSlice";
 
 const CategoryList = () => {
+  const dispatch = useAppDispatch();
+  const openCreateQuiz = useAppSelector((state) => state.quizzes.isOpen);
+
   const [addCategory, setAddCategory] = useState<boolean>(false);
-  const [createQuiz, setCreateQuiz] = useState<boolean>(false);
   const [openNewFileDialog, setOpenNewFileDialog] = useState<boolean | string>(
     false
   );
@@ -59,8 +63,11 @@ const CategoryList = () => {
         </Dialog>
       )}
 
-      {createQuiz && (
-        <Dialog title={"Create quiz"} toggleOpen={setCreateQuiz}>
+      {openCreateQuiz && (
+        <Dialog
+          title={"Create quiz"}
+          toggleOpen={(isOpen) => dispatch(displayCreatePanel(isOpen))}
+        >
           <CreateQuizComponent />
         </Dialog>
       )}
