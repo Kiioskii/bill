@@ -10,6 +10,7 @@ import { CategoriesService } from './categories/categories.service';
 import { CategoriesModule } from './categories/categories.module';
 import { QuizzesController } from './quizzes/quizzes.controller';
 import { QuizzesModule } from './quizzes/quizzes.module';
+import { FilesModule } from './files/files.module';
 import * as multer from 'multer';
 
 @Module({
@@ -24,6 +25,7 @@ import * as multer from 'multer';
     }),
     CategoriesModule,
     QuizzesModule,
+    FilesModule,
   ],
   controllers: [AppController, DocumentsController, CategoriesController, QuizzesController],
   providers: [AppService, CategoriesService],

@@ -11,6 +11,7 @@ export const useCreateQuiz = () => {
       showToast("Quiz created successfully!", "success");
     },
     onError: (error) => {
+      console.log("error", error);
       showToast(error.message || "Create quiz failed", "error");
     },
   });

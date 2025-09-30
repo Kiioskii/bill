@@ -1,6 +1,7 @@
 import { AgentService } from './../agent/agent.service';
 import { Injectable, Logger } from '@nestjs/common';
 import { supabase } from 'src/config/supabase';
+import { CreateQuizDto } from './dto/create-quiz-dto';
 
 @Injectable()
 export class QuizzesService {
@@ -8,49 +9,32 @@ export class QuizzesService {
   private readonly logger = new Logger(QuizzesService.name);
   private readonly model = 'gpt-4o';
   private readonly maxTokens = 1000;
-  private readonly overlap = 1000;
+  private readonly overlap = 200;
 
-  async createQuiz(
-    userId: string,
-    title: string = '',
-    fileIdArr: Array<string> = [],
-    sectionsCount: number = 10,
-    description: string = '',
-  ) {
+  async createQuiz(dto: CreateQuizDto) {
+    console.log('dto', dto);
+
+    const { userId, title, description, fileIds, questionsCount, difficulty } =
+      dto;
+
     try {
       const fileChunks: string[] = [];
 
-      // for (const fileId of fileIdArr) {
-      //   const { data, error } = await supabase.storage
-      //     .from('documents')
-      //     .download(`${userId}/${fileId}`);
-
-      //   if (error || !data) {
-      //     throw new Error('Create quiz failed');
-      //   }
-      //   const arrayBuffer = await data.arrayBuffer();
-      //   const text = new TextDecoder('utf-8').decode(arrayBuffer);
-      //   const chunks = await this.agentService.chunkTextByTokens(
-      //     text,
-      //     this.model,
-      //     this.maxTokens,
-      //     this.overlap,
-      //   );
-      //   fileChunks.push(...chunks);
-      // }
-
-      const promiseArr = fileIdArr.map(async (fileId) => {
+      const promiseArr = fileIds.map(async (fileId) => {
         const { data, error } = await supabase.storage
           .from('documents')
           .download(`${userId}/${fileId}`);
 
         if (error || !data) {
+          console.log('promise error', error);
           throw new Error('Create quiz failed');
         }
         const arrayBuffer = await data.arrayBuffer();
         const text = new TextDecoder('utf-8').decode(arrayBuffer);
+        const clearText = this.agentService.clearText(text);
+
         const chunks = await this.agentService.chunkTextByTokens(
-          text,
+          clearText,
           this.model,
           this.maxTokens,
           this.overlap,
@@ -60,29 +44,45 @@ export class QuizzesService {
 
       await Promise.all(promiseArr);
 
-      const messages = await this.agentService.quizPrompt(
-        fileChunks,
-        sectionsCount,
-      );
-      const response = await this.agentService.completion(
-        messages,
-        this.model,
-        false,
-        true,
-      );
+      console.log('--------------------');
 
-      // const newRow = {
-      //   user_id: userId,
-      //   title,
-      //   description,
-      //   data: response
-      // };
+      const batchSize = 3; // np. max 3 chunki na request
+      const batches = this.agentService.splitIntoBatches(fileChunks, batchSize);
+      const questionsPerBatch = Number.isNaN(+questionsCount)
+        ? questionsCount
+        : Math.ceil(+questionsCount / batches.length);
 
-      // const { data, error } = await supabase.from('quizzes').insert();
+      const allQuestions: any[] = [];
 
-      console.log(response);
-    } catch (err) {
+      console.log('batches.length', batches.length);
+
+      for (const batch of batches) {
+        console.log('batch', batch);
+
+        // const messages = await this.agentService.quizPrompt(
+        //   batch,
+        //   questionsPerBatch,
+        // );
+
+        // const response: any = await this.agentService.completion(
+        //   messages,
+        //   this.model,
+        //   false,
+        //   true,
+        // );
+        // // console.log('response', response.choices[0].message);
+        // try {
+        //   const quizPart = JSON.parse(response.choices[0].message.content);
+        //   if (quizPart?.quiz) {
+        //     allQuestions.push(...quizPart.quiz);
+        //   }
+        // } catch (err) {
+        //   console.error('Błąd parsowania odpowiedzi quizu:', err);
+        // }
+      }
+    } catch (err: any) {
       console.log('err', err);
+      throw new Error(err?.message || 'Create new quiz failed');
     }
   }
 }

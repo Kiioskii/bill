@@ -88,6 +88,7 @@ export class AgentService {
     maxTokens: number = 1000,
     overlap: number = 200,
   ) {
+    // 2. Tokenizacja
     const tokenizer = await this.getTokenizer(model);
     const tokens = tokenizer.encode(text);
     const chunks: string[] = [];
@@ -96,15 +97,38 @@ export class AgentService {
     while (start < tokens.length) {
       const end = Math.min(start + maxTokens, tokens.length);
       const chunkTokens = tokens.slice(start, end);
-      const chunk = tokenizer.decode(chunkTokens);
+
+      // 3. Dekoduj
+      let chunk = tokenizer.decode(chunkTokens);
+
+      // 4. Spróbuj przyciąć na końcu zdania (lepszy kontekst)
+      const lastSentenceEnd = Math.max(
+        chunk.lastIndexOf('.'),
+        chunk.lastIndexOf('?'),
+        chunk.lastIndexOf('!'),
+      );
+      if (lastSentenceEnd > 0 && end < tokens.length) {
+        chunk = chunk.slice(0, lastSentenceEnd + 1);
+      }
+
       chunks.push(chunk);
+
+      // 5. Przesuwaj się z overlappem
       start += maxTokens - overlap;
     }
 
     return chunks;
   }
 
-  async quizPrompt(fileArr: string[], sectionsCount: number) {
+  splitIntoBatches<T>(arr: T[], batchSize: number): T[][] {
+    const batches: T[][] = [];
+    for (let i = 0; i < arr.length; i += batchSize) {
+      batches.push(arr.slice(i, i + batchSize));
+    }
+    return batches;
+  }
+
+  async quizPrompt(fileArr: string[], sectionsCount: string | number) {
     const messages: ChatCompletionMessageParam[] = [
       {
         role: 'system',
@@ -152,5 +176,23 @@ ${fileArr.map((file, idx) => `File ${idx + 1}:\n${file}`).join('\n\n')}
     const tokens = await this.countTokens(messages, 'gpt-4o');
     this.logger.log(`Prompt uses ${tokens} tokens`);
     return messages;
+  }
+
+  clearText(raw: string): string {
+    return (
+      raw
+        // usuń numery stron w stylu "Page 1", "Strona 3 z 50"
+        .replace(/(Page|Strona)\s+\d+(\s+z\s+\d+)?/gi, '')
+
+        // usuń powtarzalne stopki (np. copyright, nazwa firmy, itp.)
+        .replace(/©.*\n/g, '')
+
+        // usuń nagłówki/stopki w wersji ALL CAPS
+        .replace(/^[A-Z\s]{5,}\n/gm, '')
+
+        // usuń puste linie powstałe po czyszczeniu
+        .replace(/\n{2,}/g, '\n')
+        .trim()
+    );
   }
 }
