@@ -4,8 +4,12 @@ import mime from 'mime-types';
 import { createReadStream, createWriteStream } from 'fs';
 import { v4 as uuidv4 } from 'uuid';
 import { promises as fs } from 'fs';
+import { supabase } from 'src/config/supabase';
+import { IDoc, TextService } from 'src/text/text.service';
 @Injectable()
 export class FilesService {
+  constructor(private readonly textService: TextService) {}
+
   private readonly MIME_TYPES: any = {
     doc: 'application/msword',
     docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
@@ -77,6 +81,17 @@ export class FilesService {
     }
   }
 
+  async getFileFromStorage(filePath: string): Promise<Blob> {
+    const { data, error } = await supabase.storage
+      .from('documents')
+      .download(filePath);
+
+    if (error || !data) {
+      throw new Error('Invalid file path: Can not find file in database');
+    }
+    return data;
+  }
+
   // MIME Type Operations
   /**
    * Gets the MIME type of a file.
@@ -88,7 +103,12 @@ export class FilesService {
       if (typeof filePath !== 'string') {
         throw new Error('Invalid file path: must be a string');
       }
-      const fileBuffer = await fs.readFile(filePath);
+
+      const data = await this.getFileFromStorage(filePath);
+
+      const arrayBuffer = await data.arrayBuffer();
+      const fileBuffer = Buffer.from(arrayBuffer);
+
       return this.getMimeTypeFromBuffer(fileBuffer, filePath);
     } catch (error: any) {
       console.error(`Failed to get MIME type: ${error.message}`);
@@ -130,10 +150,54 @@ export class FilesService {
   }
 
   async processFile(fileUrl: string, chunkSize?: number) {
-    let originalPath: string;
-    let storagePath: string;
+    const storagePath: string = fileUrl;
     const fileUUID = uuidv4();
 
-    const savedFile = await th;
+    const mimeType = await this.getMimeType(storagePath);
+    const type = this.getFileCategoryFromMimeType(mimeType);
+    let docs: IDoc[] = [];
+    switch (type) {
+      case 'text': {
+        const databaseFile = await this.getFileFromStorage(storagePath);
+        const textContent = await databaseFile.text();
+        if (chunkSize) {
+          const baseMetadata = {
+            source: storagePath,
+            path: storagePath,
+            name: basename(storagePath),
+            mimeType,
+            source_uuid: fileUUID,
+          };
+          const chunks = await this.textService.split(
+            textContent,
+            chunkSize,
+            baseMetadata,
+          );
+          docs = chunks.map((chunk) => ({
+            ...chunk,
+            metadata: {
+              ...chunk.metadata,
+              uuid: uuidv4(), // Generate a new UUID for each chunk
+            },
+          }));
+        } else {
+          docs = [
+            await this.textService.document(textContent, undefined, {
+              source: storagePath,
+              path: storagePath,
+              name: basename(storagePath),
+              mimeType,
+              source_uuid: fileUUID,
+              uuid: uuidv4(),
+            }),
+          ];
+        }
+        break;
+      }
+      default:
+        throw new Error(`Unsupported file type: ${type}`);
+    }
+
+    return { docs };
   }
 }
