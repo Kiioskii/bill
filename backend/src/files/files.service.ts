@@ -1,13 +1,19 @@
 import { Injectable } from '@nestjs/common';
 import * as FileType from 'file-type';
 import mime from 'mime-types';
+import { exec } from 'child_process';
 import { createReadStream, createWriteStream } from 'fs';
-import TurndownService from "turndown";
-import { basename, join, extname } from "path";
+import TurndownService from 'turndown';
+import { basename, join, extname } from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { promises as fs } from 'fs';
+import { promisify } from 'util';
+import { pipeline } from 'stream';
 import { supabase } from 'src/config/supabase';
 import { IDoc, TextService } from 'src/text/text.service';
+
+const execAsync = promisify(exec);
+const pump = promisify(pipeline);
 @Injectable()
 export class FilesService {
   constructor(private readonly textService: TextService) {}
@@ -136,20 +142,20 @@ export class FilesService {
     return 'document';
   }
 
-   /**
+  /**
    * Converts CSV content to Markdown.
    * @param csvContent - The CSV content as a string.
    * @returns The Markdown representation of the CSV.
    */
   private csvToMarkdown(csvContent: string): string {
-    const [headerLine, ...lines] = csvContent.split("\n");
-    const headers = headerLine.split(",");
+    const [headerLine, ...lines] = csvContent.split('\n');
+    const headers = headerLine.split(',');
     const markdownLines = [
-      `| ${headers.join(" | ")} |`,
-      `| ${headers.map(() => "---").join(" | ")} |`,
-      ...lines.map((line) => `| ${line.split(",").join(" | ")} |`),
+      `| ${headers.join(' | ')} |`,
+      `| ${headers.map(() => '---').join(' | ')} |`,
+      ...lines.map((line) => `| ${line.split(',').join(' | ')} |`),
     ];
-    return markdownLines.join("\n");
+    return markdownLines.join('\n');
   }
 
   /**
@@ -161,36 +167,33 @@ export class FilesService {
     try {
       const dataFile = await this.getFileFromStorage(filePath);
       const buffer = Buffer.from(await dataFile.arrayBuffer());
-      const html = buffer.toString("utf-8");
+      const html = buffer.toString('utf-8');
       return this.turndownService.turndown(html);
     } catch (error: any) {
       console.error(`Failed to convert HTML to Markdown: ${error.message}`);
       throw error;
     }
   }
-  
+
   // Conversion Utilities
   /**
    * Processes an Office file and returns its Markdown content and PDF path.
    * @param filePath - The path to the Office file.
    * @returns An object containing the Markdown content and PDF path.
    */
-  async processOfficeFile(filePath:string): Promise<{ markdown: string;  }>{
-        
+  async processOfficeFile(filePath: string): Promise<{ markdown: string }> {
     const ext = extname(filePath).slice(1);
     const mimeType = this.MIME_TYPES[ext];
     if (!mimeType) throw new Error(`Unsupported file type: ${ext}`);
 
     const tempFiles: string[] = [];
 
-    try{
-
+    try {
       let markdown: string;
-      if (ext.includes("xl")) {
-
+      if (ext.includes('xl')) {
         const dataFile = await this.getFileFromStorage(filePath);
         const buffer = Buffer.from(await dataFile.arrayBuffer());
-        const csvContent = buffer.toString("utf-8");
+        const csvContent = buffer.toString('utf-8');
 
         markdown = this.csvToMarkdown(csvContent);
       } else {
@@ -198,8 +201,7 @@ export class FilesService {
       }
 
       return { markdown };
-
-    }catch (error: any) {
+    } catch (error: any) {
       console.error(`Failed to process Office file: ${error.message}`);
       throw error;
     } finally {
@@ -210,16 +212,84 @@ export class FilesService {
     }
   }
 
-  async readDocumentFile(filePath:string): Promise<IDoc>{
-    try{
+  // External Tools Checks
+  /**
+   * Checks if an external command-line tool is available.
+   * @param toolName - The name of the tool (e.g., "pdftohtml").
+   */
+  private async checkExternalTool(toolName: string): Promise<void> {
+    try {
+      await execAsync(`which ${toolName}`);
+    } catch {
+      throw new Error(`${toolName} is not installed or not in PATH`);
+    }
+  }
 
-      
+  private async safeFileFromStorage(
+    fileName: string,
+    fileUrl: string,
+    userId: string,
+  ): Promise<string> {
+    const file = await this.getFileFromStorage(fileUrl);
+    const tempPath = `../temp/${userId}/${fileName}`;
+
+    const stream = file.stream(); // Blob.stream()
+    const fileStream = createWriteStream(tempPath);
+
+    await pump(stream, fileStream);
+
+    return tempPath;
+  }
+
+  // PDF Operations
+  /**
+   * Reads a PDF file and converts it to Markdown.
+   * @param filePath - The path to the PDF file.
+   * @returns The Markdown content as a string.
+   */
+  private async readPdfFile(
+    fileName: string,
+    filePath: string,
+    userId: string,
+  ): Promise<string> {
+    await this.checkExternalTool('pdftohtml');
+
+    const tempFiles: string = await this.safeFileFromStorage(
+      fileName,
+      filePath,
+      userId,
+    );
+    const tempHtmlPath = `${tempFiles}.html`;
+
+    try {
+      await execAsync(
+        `pdftohtml -s -i -noframes "${tempFiles}" "${tempHtmlPath}"`,
+      );
+
+      let htmlContent = await fs.readFile(tempHtmlPath, 'utf-8');
+      htmlContent = htmlContent.replace(/<!--[\s\S]*?-->/g, '');
+      htmlContent = htmlContent.replace(/<title>.*?<\/title>/i, '');
+      const markdownContent = this.turndownService.turndown(htmlContent);
+
+      return markdownContent;
+    } catch (error: any) {
+      console.error(`Failed to read PDF file: ${error.message}`);
+      throw error;
+    } finally {
+      // Clean up temporary files
+      for (const tempFile of tempFiles) {
+        await fs.unlink(tempFile).catch(() => {});
+      }
+    }
+  }
+
+  async readDocumentFile(filePath: string): Promise<IDoc> {
+    try {
       const mimeType = await this.getMimeType(filePath);
-      
       if (!this.mimeTypes.document.mimes.includes(mimeType)) {
         throw new Error(`Unsupported document file MIME type: ${mimeType}`);
       }
-      
+
       let content: string;
 
       if (
@@ -230,7 +300,7 @@ export class FilesService {
           this.MIME_TYPES.xlsx,
         ].includes(mimeType)
       ) {
-        console.log("Processing office file...", mimeType);
+        console.log('Processing office file...', mimeType);
         const { markdown } = await this.processOfficeFile(filePath);
         content = markdown;
       } else if (mimeType === this.MIME_TYPES.pdf) {
@@ -239,8 +309,21 @@ export class FilesService {
         throw new Error(`Unsupported document file MIME type: ${mimeType}`);
       }
 
+      const additionalMetadata = {
+        source: filePath,
+        path: filePath,
+        name: basename(filePath),
+        mimeType: mimeType,
+      };
 
-    }catch (error: any) {
+      const doc = await this.textService.document(
+        content.trim(),
+        undefined,
+        additionalMetadata,
+      );
+
+      return doc;
+    } catch (error: any) {
       console.error(`Failed to read document file: ${error.message}`);
       throw error;
     }
@@ -308,7 +391,13 @@ export class FilesService {
         break;
       }
       case 'document': {
-        const docContent = await   
+        const docContent = await this.readDocumentFile(fileUrl);
+        if (chunkSize) {
+          docs = await this.textService.split(docContent.text, chunkSize);
+        } else {
+          docs = [docContent];
+        }
+        break;
       }
       default:
         throw new Error(`Unsupported file type: ${type}`);
