@@ -3,6 +3,7 @@ import type { ChatCompletionMessageParam } from 'openai/resources/chat/completio
 
 import { createByModelName } from '@microsoft/tiktokenizer';
 import { Logger } from '@nestjs/common';
+import { IDoc } from 'src/text/text.service';
 
 export class AgentService {
   private readonly logger = new Logger(AgentService.name);
@@ -128,6 +129,24 @@ export class AgentService {
     return batches;
   }
 
+  clearText(raw: string): string {
+    return (
+      raw
+        // usuń numery stron w stylu "Page 1", "Strona 3 z 50"
+        .replace(/(Page|Strona)\s+\d+(\s+z\s+\d+)?/gi, '')
+
+        // usuń powtarzalne stopki (np. copyright, nazwa firmy, itp.)
+        .replace(/©.*\n/g, '')
+
+        // usuń nagłówki/stopki w wersji ALL CAPS
+        .replace(/^[A-Z\s]{5,}\n/gm, '')
+
+        // usuń puste linie powstałe po czyszczeniu
+        .replace(/\n{2,}/g, '\n')
+        .trim()
+    );
+  }
+
   async quizPrompt(fileArr: string[], sectionsCount: string | number) {
     const messages: ChatCompletionMessageParam[] = [
       {
@@ -178,21 +197,5 @@ ${fileArr.map((file, idx) => `File ${idx + 1}:\n${file}`).join('\n\n')}
     return messages;
   }
 
-  clearText(raw: string): string {
-    return (
-      raw
-        // usuń numery stron w stylu "Page 1", "Strona 3 z 50"
-        .replace(/(Page|Strona)\s+\d+(\s+z\s+\d+)?/gi, '')
-
-        // usuń powtarzalne stopki (np. copyright, nazwa firmy, itp.)
-        .replace(/©.*\n/g, '')
-
-        // usuń nagłówki/stopki w wersji ALL CAPS
-        .replace(/^[A-Z\s]{5,}\n/gm, '')
-
-        // usuń puste linie powstałe po czyszczeniu
-        .replace(/\n{2,}/g, '\n')
-        .trim()
-    );
-  }
+  async generateQuiz(document: IDoc[]) {}
 }

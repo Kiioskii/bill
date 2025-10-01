@@ -90,10 +90,10 @@ export class FilesService {
     }
   }
 
-  async getFileFromStorage(filePath: string): Promise<Blob> {
+  async getFileFromStorage(fileName: string): Promise<Blob> {
     const { data, error } = await supabase.storage
       .from('documents')
-      .download(filePath);
+      .download(fileName);
 
     if (error || !data) {
       throw new Error('Invalid file path: Can not find file in database');
@@ -107,18 +107,14 @@ export class FilesService {
    * @param filePath - The path to the file.
    * @returns The MIME type as a string.
    */
-  async getMimeType(filePath: string): Promise<string> {
+  async getMimeType(fileName: string): Promise<string> {
     try {
-      if (typeof filePath !== 'string') {
-        throw new Error('Invalid file path: must be a string');
-      }
-
-      const data = await this.getFileFromStorage(filePath);
+      const data = await this.getFileFromStorage(fileName);
 
       const arrayBuffer = await data.arrayBuffer();
       const fileBuffer = Buffer.from(arrayBuffer);
 
-      return this.getMimeTypeFromBuffer(fileBuffer, filePath);
+      return this.getMimeTypeFromBuffer(fileBuffer, fileName);
     } catch (error: any) {
       console.error(`Failed to get MIME type: ${error.message}`);
       throw error;
@@ -181,23 +177,22 @@ export class FilesService {
    * @param filePath - The path to the Office file.
    * @returns An object containing the Markdown content and PDF path.
    */
-  async processOfficeFile(filePath: string): Promise<{ markdown: string }> {
-    const ext = extname(filePath).slice(1);
-    const mimeType = this.MIME_TYPES[ext];
-    if (!mimeType) throw new Error(`Unsupported file type: ${ext}`);
-
+  async processOfficeFile(
+    fileName: string,
+    mimeType: string,
+  ): Promise<{ markdown: string }> {
     const tempFiles: string[] = [];
 
     try {
       let markdown: string;
-      if (ext.includes('xl')) {
-        const dataFile = await this.getFileFromStorage(filePath);
+      if (mimeType === this.MIME_TYPES.xls) {
+        const dataFile = await this.getFileFromStorage(fileName);
         const buffer = Buffer.from(await dataFile.arrayBuffer());
         const csvContent = buffer.toString('utf-8');
 
         markdown = this.csvToMarkdown(csvContent);
       } else {
-        markdown = await this.convertHTMLToMarkdown(filePath);
+        markdown = await this.convertHTMLToMarkdown(fileName);
       }
 
       return { markdown };
@@ -227,13 +222,12 @@ export class FilesService {
 
   private async safeFileFromStorage(
     fileName: string,
-    fileUrl: string,
     userId: string,
   ): Promise<string> {
-    const file = await this.getFileFromStorage(fileUrl);
+    const file = await this.getFileFromStorage(fileName);
     const tempPath = `../temp/${userId}/${fileName}`;
 
-    const stream = file.stream(); // Blob.stream()
+    const stream = file.stream();
     const fileStream = createWriteStream(tempPath);
 
     await pump(stream, fileStream);
@@ -247,18 +241,10 @@ export class FilesService {
    * @param filePath - The path to the PDF file.
    * @returns The Markdown content as a string.
    */
-  private async readPdfFile(
-    fileName: string,
-    filePath: string,
-    userId: string,
-  ): Promise<string> {
+  private async readPdfFile(fileName: string, userId: string): Promise<string> {
     await this.checkExternalTool('pdftohtml');
 
-    const tempFiles: string = await this.safeFileFromStorage(
-      fileName,
-      filePath,
-      userId,
-    );
+    const tempFiles: string = await this.safeFileFromStorage(fileName, userId);
     const tempHtmlPath = `${tempFiles}.html`;
 
     try {
@@ -269,7 +255,7 @@ export class FilesService {
       let htmlContent = await fs.readFile(tempHtmlPath, 'utf-8');
       htmlContent = htmlContent.replace(/<!--[\s\S]*?-->/g, '');
       htmlContent = htmlContent.replace(/<title>.*?<\/title>/i, '');
-      const markdownContent = this.turndownService.turndown(htmlContent);
+      const markdownContent = await this.turndownService.turndown(htmlContent);
 
       return markdownContent;
     } catch (error: any) {
@@ -283,9 +269,9 @@ export class FilesService {
     }
   }
 
-  async readDocumentFile(filePath: string): Promise<IDoc> {
+  async readDocumentFile(fileName: string, userId: string): Promise<IDoc> {
     try {
-      const mimeType = await this.getMimeType(filePath);
+      const mimeType = await this.getMimeType(fileName);
       if (!this.mimeTypes.document.mimes.includes(mimeType)) {
         throw new Error(`Unsupported document file MIME type: ${mimeType}`);
       }
@@ -301,18 +287,17 @@ export class FilesService {
         ].includes(mimeType)
       ) {
         console.log('Processing office file...', mimeType);
-        const { markdown } = await this.processOfficeFile(filePath);
+        const { markdown } = await this.processOfficeFile(fileName, mimeType);
         content = markdown;
       } else if (mimeType === this.MIME_TYPES.pdf) {
-        content = await this.readPdfFile(filePath);
+        content = await this.readPdfFile(fileName, userId);
       } else {
         throw new Error(`Unsupported document file MIME type: ${mimeType}`);
       }
 
       const additionalMetadata = {
-        source: filePath,
-        path: filePath,
-        name: basename(filePath),
+        userId,
+        name: fileName,
         mimeType: mimeType,
       };
 
@@ -345,22 +330,19 @@ export class FilesService {
     }
   }
 
-  async processFile(fileUrl: string, chunkSize?: number) {
-    const storagePath: string = fileUrl;
+  async processFile(fileName: string, userId: string, chunkSize?: number) {
     const fileUUID = uuidv4();
 
-    const mimeType = await this.getMimeType(storagePath);
+    const mimeType = await this.getMimeType(fileName);
     const type = this.getFileCategoryFromMimeType(mimeType);
     let docs: IDoc[] = [];
     switch (type) {
       case 'text': {
-        const databaseFile = await this.getFileFromStorage(storagePath);
+        const databaseFile = await this.getFileFromStorage(fileName);
         const textContent = await databaseFile.text();
         if (chunkSize) {
           const baseMetadata = {
-            source: storagePath,
-            path: storagePath,
-            name: basename(storagePath),
+            name: fileName,
             mimeType,
             source_uuid: fileUUID,
           };
@@ -379,9 +361,7 @@ export class FilesService {
         } else {
           docs = [
             await this.textService.document(textContent, undefined, {
-              source: storagePath,
-              path: storagePath,
-              name: basename(storagePath),
+              name: fileName,
               mimeType,
               source_uuid: fileUUID,
               uuid: uuidv4(),
@@ -391,7 +371,7 @@ export class FilesService {
         break;
       }
       case 'document': {
-        const docContent = await this.readDocumentFile(fileUrl);
+        const docContent = await this.readDocumentFile(fileName, userId);
         if (chunkSize) {
           docs = await this.textService.split(docContent.text, chunkSize);
         } else {
