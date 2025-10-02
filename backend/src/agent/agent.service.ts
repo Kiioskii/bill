@@ -1,4 +1,3 @@
-import { description } from './../../../frontend/src/components/chart-area-interactive';
 import OpenAI from 'openai';
 import type { ChatCompletionMessageParam } from 'openai/resources/chat/completions';
 
@@ -201,10 +200,10 @@ ${fileArr.map((file, idx) => `File ${idx + 1}:\n${file}`).join('\n\n')}
 
   async generateQuiz(
     document: IDoc[],
-    difficulty: string,
-    questionsCount: string,
-    title: string,
-    description: string,
+    // difficulty: string,
+    // questionsCount: string,
+    // title: string,
+    // description: string,
   ) {
     const batchSize = 5;
     const quizArr = [];
@@ -220,11 +219,11 @@ ${fileArr.map((file, idx) => `File ${idx + 1}:\n${file}`).join('\n\n')}
           },
         ];
 
-        const completion = (await this.completion(
-          messages,
-          model: 'gpt-4o',
-          stream: false,
-        )) as ChatCompletion;
+        // const completion = (await this.completion(
+        //   messages,
+        //   model: 'gpt-4o',
+        //   stream: false,
+        // )) as ChatCompletion;
       });
     }
   }

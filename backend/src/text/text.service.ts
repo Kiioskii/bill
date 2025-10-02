@@ -32,8 +32,8 @@ export class TextService {
     ['<|im_end|>', 100265],
     ['<|im_sep|>', 100266],
   ]);
-
-  constructor(private modelName: string = 'gpt-4') {}
+  private modelName = 'gpt-4'; // default value
+  constructor() {}
 
   private async initializeTokenizer(model?: string): Promise<void> {
     if (!this.tokenizer || model !== this.modelName) {
