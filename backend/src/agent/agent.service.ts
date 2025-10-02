@@ -1,9 +1,11 @@
+import { description } from './../../../frontend/src/components/chart-area-interactive';
 import OpenAI from 'openai';
 import type { ChatCompletionMessageParam } from 'openai/resources/chat/completions';
 
 import { createByModelName } from '@microsoft/tiktokenizer';
 import { Logger } from '@nestjs/common';
 import { IDoc } from 'src/text/text.service';
+import { systemPrompt } from 'src/quizzes/prompts/systemPrompt';
 
 export class AgentService {
   private readonly logger = new Logger(AgentService.name);
@@ -60,7 +62,7 @@ export class AgentService {
     model: string = 'gpt-4',
     stream: boolean = false,
     jsonMode: boolean = false,
-    maxTokens: number = 1024,
+    maxTokens: number = 8096,
   ): Promise<
     | OpenAI.Chat.Completions.ChatCompletion
     | AsyncIterable<OpenAI.Chat.Completions.ChatCompletionChunk>
@@ -197,5 +199,33 @@ ${fileArr.map((file, idx) => `File ${idx + 1}:\n${file}`).join('\n\n')}
     return messages;
   }
 
-  async generateQuiz(document: IDoc[]) {}
+  async generateQuiz(
+    document: IDoc[],
+    difficulty: string,
+    questionsCount: string,
+    title: string,
+    description: string,
+  ) {
+    const batchSize = 5;
+    const quizArr = [];
+
+    for (let i = 0; i < document.length; i += batchSize) {
+      const batch = document.slice(i, i + batchSize);
+      const bachPromises = batch.map(async (doc) => {
+        const message: ChatCompletionMessageParam[] = [
+          { role: 'system', content: systemPrompt() },
+          {
+            role: 'user',
+            content: `Create quiz based on following data: \n\n ${doc.text}`,
+          },
+        ];
+
+        const completion = (await this.completion(
+          messages,
+          model: 'gpt-4o',
+          stream: false,
+        )) as ChatCompletion;
+      });
+    }
+  }
 }
