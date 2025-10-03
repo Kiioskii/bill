@@ -1,5 +1,8 @@
 import OpenAI from 'openai';
-import type { ChatCompletionMessageParam } from 'openai/resources/chat/completions';
+import type {
+  ChatCompletion,
+  ChatCompletionMessageParam,
+} from 'openai/resources/chat/completions';
 
 import { createByModelName } from '@microsoft/tiktokenizer';
 import { Logger } from '@nestjs/common';
@@ -56,17 +59,24 @@ export class AgentService {
     return tokens.length;
   }
 
-  async completion(
-    messages: ChatCompletionMessageParam[],
-    model: string = 'gpt-4',
-    stream: boolean = false,
-    jsonMode: boolean = false,
-    maxTokens: number = 8096,
-  ): Promise<
+  async completion(config: {
+    messages: ChatCompletionMessageParam[];
+    model?: string;
+    stream?: boolean;
+    jsonMode?: boolean;
+    maxTokens?: number;
+  }): Promise<
     | OpenAI.Chat.Completions.ChatCompletion
     | AsyncIterable<OpenAI.Chat.Completions.ChatCompletionChunk>
   > {
     try {
+      const {
+        messages,
+        model = 'gpt-4o',
+        stream = false,
+        jsonMode = false,
+        maxTokens = 8096,
+      } = config;
       const chatCompletion = await this.openai.chat.completions.create({
         messages,
         model,
@@ -201,17 +211,18 @@ ${fileArr.map((file, idx) => `File ${idx + 1}:\n${file}`).join('\n\n')}
   async generateQuiz(
     document: IDoc[],
     // difficulty: string,
+
     // questionsCount: string,
     // title: string,
     // description: string,
   ) {
     const batchSize = 5;
-    const quizArr = [];
+    // const quizArr = [];
 
     for (let i = 0; i < document.length; i += batchSize) {
       const batch = document.slice(i, i + batchSize);
       const bachPromises = batch.map(async (doc) => {
-        const message: ChatCompletionMessageParam[] = [
+        const messages: ChatCompletionMessageParam[] = [
           { role: 'system', content: systemPrompt() },
           {
             role: 'user',
@@ -219,12 +230,19 @@ ${fileArr.map((file, idx) => `File ${idx + 1}:\n${file}`).join('\n\n')}
           },
         ];
 
-        // const completion = (await this.completion(
-        //   messages,
-        //   model: 'gpt-4o',
-        //   stream: false,
-        // )) as ChatCompletion;
+        const completion = (await this.completion({
+          messages,
+          model: 'gpt-4o',
+          stream: false,
+        })) as ChatCompletion;
+
+        console.log(
+          'completion.choices[0].message',
+          completion.choices[0].message,
+        );
       });
+
+      await Promise.all(bachPromises);
     }
   }
 }

@@ -161,9 +161,13 @@ export class FilesService {
    */
   private async convertHTMLToMarkdown(filePath: string): Promise<string> {
     try {
+      console.log('xxx convertHTMLToMarkdown');
       const dataFile = await this.getFileFromStorage(filePath);
+      console.log('yyy convertHTMLToMarkdown');
       const buffer = Buffer.from(await dataFile.arrayBuffer());
+      console.log('zzz convertHTMLToMarkdown');
       const html = buffer.toString('utf-8');
+      console.log('gggg convertHTMLToMarkdown');
       return this.turndownService.turndown(html);
     } catch (error: any) {
       console.error(`Failed to convert HTML to Markdown: ${error.message}`);
@@ -186,13 +190,19 @@ export class FilesService {
     try {
       let markdown: string;
       if (mimeType === this.MIME_TYPES.xls) {
+        console.log('1111');
         const dataFile = await this.getFileFromStorage(fileName);
+        console.log('222');
         const buffer = Buffer.from(await dataFile.arrayBuffer());
+        console.log('333');
         const csvContent = buffer.toString('utf-8');
 
+        console.log('START csvToMarkdown');
         markdown = this.csvToMarkdown(csvContent);
       } else {
+        console.log('START convertHTMLToMarkdown');
         markdown = await this.convertHTMLToMarkdown(fileName);
+        console.log('END convertHTMLToMarkdown');
       }
 
       return { markdown };
@@ -288,6 +298,7 @@ export class FilesService {
       ) {
         console.log('Processing office file...', mimeType);
         const { markdown } = await this.processOfficeFile(fileName, mimeType);
+        console.log('GET markdown');
         content = markdown;
       } else if (mimeType === this.MIME_TYPES.pdf) {
         content = await this.readPdfFile(fileName, userId);
@@ -301,11 +312,14 @@ export class FilesService {
         mimeType: mimeType,
       };
 
+      console.log('START DOCUMENT');
+
       const doc = await this.textService.document(
         content.trim(),
         undefined,
         additionalMetadata,
       );
+      console.log('END DOCUMENT');
 
       return doc;
     } catch (error: any) {
@@ -338,6 +352,7 @@ export class FilesService {
     let docs: IDoc[] = [];
     switch (type) {
       case 'text': {
+        console.log('TEXT');
         const databaseFile = await this.getFileFromStorage(fileName);
         const textContent = await databaseFile.text();
         if (chunkSize) {
@@ -371,8 +386,11 @@ export class FilesService {
         break;
       }
       case 'document': {
+        console.log('DOCUMENT');
         const docContent = await this.readDocumentFile(fileName, userId);
+        console.log('END');
         if (chunkSize) {
+          console.log('START SPLIT');
           docs = await this.textService.split(docContent.text, chunkSize);
         } else {
           docs = [docContent];

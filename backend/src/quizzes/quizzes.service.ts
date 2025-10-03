@@ -95,11 +95,13 @@ export class QuizzesService {
 
     const promiseArr = fileIds.map(async (fileId) => {
       const fileName = `${userId}/${fileId}`;
+      console.log('xxxx');
       const { docs } = await this.fileService.processFile(
         fileName,
         userId!,
         4500,
       );
+      console.log('zzzzz');
       const quizDocs = await this.agentService.generateQuiz(docs);
     });
 

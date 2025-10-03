@@ -9,7 +9,7 @@ module.exports = {
   trailingComma: 'es5', // Końcowe przecinki w obiektach, tablicach itd.
   bracketSpacing: true, // Spacje w obiektach: { foo: bar }
   arrowParens: 'always', // Zawsze nawiasy w arrow functions: (x) => {}
-  endOfLine: 'lf', // Styl końca linii (LF)
+  endOfLine: 'auto', // Styl końca linii (LF)
 
   // Dodatki do lepszej integracji z Tailwindem
   plugins: ['prettier-plugin-tailwindcss'],

@@ -54,10 +54,12 @@ export class TextService {
       throw new Error('Tokenizer not initialized');
     }
     const formattedContent = this.formatForTokenization(text);
+
     const tokens = this.tokenizer.encode(
       formattedContent,
       Array.from(this.SPECIAL_TOKENS.keys()),
     );
+    console.log('cccc');
     return tokens.length;
   }
 
@@ -259,9 +261,13 @@ export class TextService {
     model?: string,
     additionalMetadata?: Record<string, any>,
   ): Promise<IDoc> {
+    console.log('1111');
     await this.initializeTokenizer(model);
+    console.log('2222');
     const tokens = this.countTokens(text);
+    console.log('3333');
     const headers = this.extractHeaders(text);
+    console.log('4444');
     const { content, urls, images } = this.extractUrlsAndImages(text);
 
     return {
