@@ -12,7 +12,6 @@ export class QuizzesController {
   @Post('create')
   async createQuiz(@User('sub') userId: string, @Body() body: CreateQuizDto) {
     const x = await this.quizzesService.createQuiz({ ...body, userId });
-    console.log('x', x);
     return x;
   }
 }

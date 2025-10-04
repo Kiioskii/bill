@@ -90,21 +90,49 @@ export class QuizzesService {
   // }
 
   async createQuiz(dto: CreateQuizDto) {
-    const { userId, title, description, fileIds, questionsCount, difficulty } =
-      dto;
+    try {
+      const {
+        userId,
+        title,
+        description,
+        fileIds,
+        questionsCount,
+        difficulty,
+      } = dto;
 
-    const promiseArr = fileIds.map(async (fileId) => {
-      const fileName = `${userId}/${fileId}`;
-      console.log('xxxx');
-      const { docs } = await this.fileService.processFile(
-        fileName,
-        userId!,
-        4500,
-      );
-      console.log('zzzzz');
-      const quizDocs = await this.agentService.generateQuiz(docs);
-    });
+      const promiseArr = fileIds.map(async (fileId) => {
+        const fileName = `${userId}/${fileId}`;
+        const { docs } = await this.fileService.processFile(
+          fileName,
+          userId!,
+          4500,
+        );
+        const quiz = await this.agentService.generateQuiz(
+          title,
+          description,
+          docs,
+        );
+        return quiz;
+      });
 
-    await Promise.all(promiseArr);
+      const quizArr = await Promise.all(promiseArr);
+
+      const quizRow = {
+        user_id: dto.userId!,
+        title: dto.title,
+        description: dto.description,
+        data: quizArr.flat(),
+        file_ids: dto.fileIds,
+      };
+
+      const { data, error } = await supabase.from('quizzes').insert([quizRow]);
+      if (error) {
+        console.log('error', error);
+        throw new Error(error.message);
+      }
+    } catch (err: any) {
+      console.log('err', err);
+      throw new Error(err?.message || 'Create new quiz failed');
+    }
   }
 }

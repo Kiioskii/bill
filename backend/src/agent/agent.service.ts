@@ -209,12 +209,12 @@ ${fileArr.map((file, idx) => `File ${idx + 1}:\n${file}`).join('\n\n')}
   }
 
   async generateQuiz(
+    title: string,
+    description: string,
     document: IDoc[],
     // difficulty: string,
 
     // questionsCount: string,
-    // title: string,
-    // description: string,
   ) {
     const batchSize = 5;
     // const quizArr = [];
@@ -230,19 +230,23 @@ ${fileArr.map((file, idx) => `File ${idx + 1}:\n${file}`).join('\n\n')}
           },
         ];
 
+        // SAVE PROMPT TO PROMPTFOO
+
         const completion = (await this.completion({
           messages,
           model: 'gpt-4o',
           stream: false,
+          jsonMode: true,
         })) as ChatCompletion;
 
-        console.log(
-          'completion.choices[0].message',
-          completion.choices[0].message,
-        );
+        const str: string = completion.choices[0].message.content || '';
+        const jsonQuiz = JSON.parse(str);
+
+        return jsonQuiz;
       });
 
-      await Promise.all(bachPromises);
+      const quizArr = await Promise.all(bachPromises);
+      return quizArr;
     }
   }
 }
