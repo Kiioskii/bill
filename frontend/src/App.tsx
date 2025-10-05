@@ -4,6 +4,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "./app/queryClient";
 import { ToastContainer } from "react-toastify";
 import { AppRoutes } from "./routes/routes";
+
 function App() {
   return (
     <Provider store={store}>
