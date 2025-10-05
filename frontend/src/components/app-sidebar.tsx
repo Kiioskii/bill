@@ -131,7 +131,7 @@ const data = {
     },
     {
       name: "Quizzes",
-      url: "Quizzes",
+      url: "quizzes",
       icon: IconReport,
     },
     {

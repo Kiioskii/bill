@@ -9,9 +9,9 @@ export const DashboardLayout = () => {
   const isOpen = useAppSelector((state) => state.sheet.isOpen);
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-gray-50 ">
       <Sidebar>
-        <main className="flex-1 p-6 overflow-y-auto relative">
+        <main className="flex-1 p-6 overflow-y-auto relative  bg-neutral-50">
           <Sheet open={isOpen} onOpenChange={() => dispatch(toggleSheet())}>
             <Outlet />
             <SheetComponent />

@@ -7,6 +7,7 @@ import { DocumentsPage } from "../features/documents/pages/DocumentsPage";
 import ProtectedRoute from "./ProtectedRoute";
 import { useTranslation } from "react-i18next";
 import { useEffect } from "react";
+import QuizzesPage from "@/features/quizzes/pages/QuizzesPage";
 
 const LanguageWrapper = ({ children }) => {
   const { i18n } = useTranslation();
@@ -55,7 +56,7 @@ export const AppRoutes = () => {
       >
         <Route index element={<HomePage />} />
         <Route path="documents" element={<DocumentsPage />} />
-        {/* <Route path="quizzes" element={< />} /> */}
+        <Route path="quizzes" element={<QuizzesPage />} />
       </Route>
     </Routes>
   );
