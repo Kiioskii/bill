@@ -12,9 +12,12 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { showToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
-import { useState, type FormEvent } from "react";
+import { createElement, useState, type FormEvent } from "react";
 import { useCreateQuiz } from "../hooks/useCreateQuiz";
 import { useAppSelector } from "@/app/store";
+import ColorSelector from "@/features/categories/components/ColorSelector";
+import SelectIcon from "@/components/select-icon";
+import * as FaIcons from "react-icons/fa";
 
 const levels = [
   { title: "Beginner", color: "accent-green-500" },
@@ -37,9 +40,12 @@ const questionsCountOptions: string[] = [
 const CreateQuizComponent = () => {
   const [value, setValue] = useState(2);
   const [title, setTitle] = useState<string>("");
+  const [color, setColor] = useState<string>("blue-500");
   const [difficulty, setDifficulty] = useState<string>("Mid");
   const [description, setDescription] = useState<string>("");
   const [questionsCount, setQuestionsCount] = useState<string>("Auto");
+  const [selectedIcon, setSelectedIcon] = useState<string | null>(null);
+  const [showIconPicker, setShowIconPicker] = useState<boolean>(false);
   const fileIds = useAppSelector((state) => state.quizzes.fileIds);
 
   const { mutate: createQuiz, isPending } = useCreateQuiz();
@@ -61,12 +67,7 @@ const CreateQuizComponent = () => {
       showToast("There is a problem with difficulty level", "error");
       return;
     }
-    console.log("questionsCount", questionsCount);
-    console.log("questionsCountOptions", questionsCountOptions);
-    console.log(
-      "questionsCountOptions[questionsCount]",
-      questionsCountOptions.includes[questionsCount]
-    );
+
     if (
       questionsCountOptions.filter((item) => item === questionsCount).length ===
       0
@@ -79,7 +80,15 @@ const CreateQuizComponent = () => {
       return;
     }
 
-    createQuiz({ title, description, questionsCount, difficulty, fileIds });
+    createQuiz({
+      title,
+      description,
+      questionsCount,
+      difficulty,
+      fileIds,
+      icon: selectedIcon,
+      color,
+    });
   };
 
   return (
@@ -110,6 +119,7 @@ const CreateQuizComponent = () => {
           </SelectContent>
         </Select>
       </div>
+
       <div className="w-full flex flex-col justify-start">
         <label className="font-semibold text-sm mb-2">Difficulty level</label>
         <input
@@ -136,6 +146,29 @@ const CreateQuizComponent = () => {
           })}
         </div>
       </div>
+
+      <div className="w-full flex flex-row justify-between ">
+        <div className="w-2/3">
+          <ColorSelector value={color} onChange={setColor} />
+        </div>
+        <div className="flex items-center justify-between space-x-2 ">
+          <Button
+            variant="outline"
+            type="button"
+            onClick={() => setShowIconPicker(true)}
+          >
+            {selectedIcon ? (
+              <>
+                {createElement(FaIcons[selectedIcon], { size: 20 })}
+                <span className="ml-2">Change icon</span>
+              </>
+            ) : (
+              "Chose icon"
+            )}
+          </Button>
+        </div>
+      </div>
+
       <div className="w-full flex flex-col mb-2">
         <label className="font-semibold text-sm mb-2">
           Additional data (optional)
@@ -146,6 +179,12 @@ const CreateQuizComponent = () => {
           onChange={(e) => setDescription(e.target.value)}
         />
       </div>
+      {showIconPicker && (
+        <SelectIcon
+          setSelectedIcon={setSelectedIcon}
+          setShowIconPicker={setShowIconPicker}
+        />
+      )}
       <div className="flex flex-row justify-end">
         <Button type="submit">
           {isPending ? "Uploading ..." : "Create quiz"}

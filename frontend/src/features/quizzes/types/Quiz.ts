@@ -4,4 +4,6 @@ export type CreateQuizPayload = {
   difficulty: string;
   description: string;
   questionsCount: string;
+  color: string | null;
+  icon: string | null;
 };

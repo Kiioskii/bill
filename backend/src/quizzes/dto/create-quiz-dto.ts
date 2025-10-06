@@ -8,4 +8,6 @@ export interface CreateQuizDto {
   fileIds: string[];
   questionsCount: QuestionsCount;
   difficulty: Difficulty;
+  color: string | null;
+  icon: string | null;
 }

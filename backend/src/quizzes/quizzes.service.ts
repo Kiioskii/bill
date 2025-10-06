@@ -23,6 +23,8 @@ export class QuizzesService {
         fileIds,
         questionsCount,
         difficulty,
+        icon,
+        color,
       } = dto;
 
       const promiseArr = fileIds.map(async (fileId) => {
@@ -44,10 +46,12 @@ export class QuizzesService {
 
       const quizRow = {
         user_id: dto.userId!,
-        title: dto.title,
-        description: dto.description,
+        title,
+        description,
         data: quizArr.flat(),
         file_ids: dto.fileIds,
+        color,
+        icon,
       };
 
       const { data, error } = await supabase.from('quizzes').insert([quizRow]);
