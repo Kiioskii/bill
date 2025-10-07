@@ -98,16 +98,34 @@ export class QuizzesService {
         await supabase
           .from('quizzes')
           .select(
-            'title, description, questions_count, color, icon, difficulty',
+            'id, title, description, questions_count, color, icon, difficulty',
           )
           .eq('owner_id', dto.userId);
 
-      if (error || !data) {
+      const {
+        data: favData,
+        error: FavError,
+      }: { data: { quiz_id: string }[] | null; error: PostgrestError | null } =
+        await supabase
+          .from('favorite_quizzes')
+          .select('quiz_id')
+          .eq('user_id', dto.userId)
+          .eq('favorite', true);
+
+      if (error || !data || FavError) {
         console.error('Supabase error: ', error?.message);
         throw new Error(error?.message || 'Supabase list quizzes error');
       }
 
-      return data;
+      const favoriteQuizzes = favData?.map((item) => item.quiz_id);
+      const response = data?.map((item) => {
+        return {
+          ...item,
+          isFavorite: favoriteQuizzes?.includes(item.id),
+        };
+      });
+
+      return response;
     } catch (err: any) {
       if (err instanceof Error) {
         console.error('Unexpected error: ', err.message);
@@ -117,22 +135,26 @@ export class QuizzesService {
     }
   }
 
-  async addToFavorites(userId: string, quizId: string) {
+  async toggleFavorite(dto: {
+    userId: string;
+    quizId: string;
+    isFavorite: boolean;
+  }) {
     try {
-      const dataToInsert = {
-        user_id: userId,
-        quiz_id: quizId,
-      };
+      const { userId, quizId, isFavorite } = dto;
+
       const { data, error } = await supabase
         .from('favorite_quizzes')
-        .insert([dataToInsert]);
+        .update({ favorite: isFavorite })
+        .eq('user_id', userId)
+        .eq('quiz_id', quizId);
 
-      if (error || !data) {
+      if (error) {
         throw new Error(error?.message || 'Add to favorites supabase error');
       }
       return data;
     } catch (err: any) {
-      console.log('err', err);
+      console.error('err', err);
       throw new Error(err?.message || 'Add to favorites failed');
     }
   }

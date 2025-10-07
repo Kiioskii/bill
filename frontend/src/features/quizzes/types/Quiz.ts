@@ -9,3 +9,14 @@ export type CreateQuizPayload = {
     color: string | null;
     icon: string | null;
 };
+
+export type ListQuizData = {
+    id: string;
+    title: string;
+    color: string | null;
+    description: string;
+    difficulty: Difficulty;
+    icon: string | null;
+    favorite_quizzes: { user_id: string }[];
+    questions_count: number;
+};

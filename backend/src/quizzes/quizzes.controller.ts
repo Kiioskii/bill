@@ -24,14 +24,14 @@ export class QuizzesController {
   }
 
   @UseGuards(SupabaseJwtGuard)
-  @Post('addToFavorites')
-  async addToFavorites(
+  @Post('toggleFavorite')
+  async toggleFavorite(
     @User('sub') userId: string,
-    @Body() body: { quizId: string },
+    @Body() body: { quizId: string; isFavorite: boolean },
   ) {
-    const quizId = body.quizId;
-    const data = { userId, quizId };
-    const response = await this.quizzesService.listQuiz(data);
+    const { quizId, isFavorite } = body;
+    const data = { userId, quizId, isFavorite };
+    const response = await this.quizzesService.toggleFavorite(data);
     return response;
   }
 }

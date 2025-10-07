@@ -11,7 +11,7 @@ export const listQuiz = async () => {
     return response.data;
 };
 
-export const addToFavoritesRequest = async (data: { quizId: string }) => {
-    const response = await api.post("quizzes/addToFavorites", data);
+export const toggleFavoriteRequest = async (data: { quizId: string; isFavorite: boolean }) => {
+    const response = await api.post("quizzes/toggleFavorite", data);
     return response.data;
 };

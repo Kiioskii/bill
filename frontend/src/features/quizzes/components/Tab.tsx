@@ -6,7 +6,9 @@ import * as FaIcons from "react-icons/fa";
 import { FaRegStar, FaStar } from "react-icons/fa";
 import { MdEdit } from "react-icons/md";
 import { useTranslation } from "react-i18next";
+import { useToggleFavorite } from "../hooks/useToggleFavorite";
 interface QuizI {
+    id: string;
     title: string;
     description: string;
     difficulty: "beginner" | "easy" | "medium" | "hard" | "expert";
@@ -30,6 +32,7 @@ const difficultyColors: Record<QuizI["difficulty"], string> = {
 
 const Tab = ({ data }: TabProps) => {
     const {
+        id,
         icon,
         color,
         title = "Biology Chapter 5",
@@ -43,6 +46,13 @@ const Tab = ({ data }: TabProps) => {
 
     const { t } = useTranslation("quizzes");
     const [favorite, setFavorite] = useState(isFavorite || false);
+    const { mutate: toggleFavorite, isPending } = useToggleFavorite();
+
+    const handleToggleFavorite = () => {
+        const newValue = !favorite;
+        setFavorite(newValue);
+        toggleFavorite({ quizId: id, isFavorite: newValue });
+    };
 
     return (
         <div className="w-full h-fit flex flex-col p-5 bg-white rounded-md border shadow gap-3 ">
@@ -63,9 +73,7 @@ const Tab = ({ data }: TabProps) => {
                     </div>
                 </div>
                 <div
-                    onClick={() => {
-                        setFavorite((item) => !item);
-                    }}
+                    onClick={handleToggleFavorite}
                     className={cn(
                         "h-10 w-10 rounded-full flex justify-center items-center text-gray-400 cursor-pointer",
                         favorite && "text-yellow-400"
