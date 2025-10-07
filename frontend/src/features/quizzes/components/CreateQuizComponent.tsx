@@ -40,7 +40,7 @@ const questionsCountOptions: string[] = [
 const CreateQuizComponent = () => {
   const [value, setValue] = useState(2);
   const [title, setTitle] = useState<string>("");
-  const [color, setColor] = useState<string>("blue-500");
+  const [color, setColor] = useState<string>("blue");
   const [difficulty, setDifficulty] = useState<string>("Mid");
   const [description, setDescription] = useState<string>("");
   const [questionsCount, setQuestionsCount] = useState<string>("Auto");

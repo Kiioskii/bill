@@ -2,20 +2,19 @@ import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 import LanguageDetector from "i18next-browser-languagedetector";
 
+import quizzesEN from "./features/quizzes/translations/en.json";
+import quizzesPL from "./features/quizzes/translations/pl.json";
+
 i18n
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
     resources: {
       en: {
-        translation: {
-          welcome: "Welcome to my app",
-        },
+        quizzes: quizzesEN,
       },
       pl: {
-        translation: {
-          welcome: "Witaj w mojej aplikacji",
-        },
+        quizzes: quizzesPL,
       },
     },
     fallbackLng: "en",
