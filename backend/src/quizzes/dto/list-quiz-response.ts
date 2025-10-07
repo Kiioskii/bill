@@ -1,12 +1,9 @@
-type QuestionsCount = 'Auto' | '10' | '20' | '30' | '50' | '70' | '100';
 type Difficulty = 'beginner' | 'easy' | 'medium' | 'hard' | 'expert';
 
-export interface CreateQuizDto {
-  userId?: string;
+export interface ListQuizResponse {
   title: string;
   description: string;
-  fileIds: string[];
-  questionsCount: QuestionsCount;
+  questions_count: number;
   difficulty: Difficulty;
   color: string | null;
   icon: string | null;

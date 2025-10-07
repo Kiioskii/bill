@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
-import { createElement, useState } from "react";
+import { createElement, useEffect, useState } from "react";
 import * as FaIcons from "react-icons/fa";
 import { FaRegStar, FaStar } from "react-icons/fa";
 import { MdEdit } from "react-icons/md";
@@ -9,7 +9,7 @@ import { useTranslation } from "react-i18next";
 interface QuizI {
   title: string;
   description: string;
-  level: "easy" | "medium" | "hard";
+  difficulty: "beginner" | "easy" | "medium" | "hard" | "expert";
   icon: string;
   color: string;
   questions: string;
@@ -21,25 +21,26 @@ interface TabProps {
   data: QuizI;
 }
 
-const levelColors: Record<QuizI["level"], string> = {
+const difficultyColors: Record<QuizI["difficulty"], string> = {
   easy: "text-emerald-500 bg-emerald-100",
   medium: "text-amber-500 bg-amber-100",
   hard: "text-red-500 bg-red-100",
+  expert: "text-red-500 bg-red-100",
 };
 
 const Tab = ({ data }: TabProps) => {
-  const { t } = useTranslation("quizzes");
-  const [favorite, setFavorite] = useState<boolean>(false);
-
   const {
     icon,
     color,
     title = "Biology Chapter 5",
-    questions = 10,
-    level = "medium",
+    questions_count: questions = 10,
+    difficulty = "medium",
     isFavorite = false,
     progress = 0,
   } = data;
+
+  const { t } = useTranslation("quizzes");
+  const [favorite, setFavorite] = useState(isFavorite || false);
 
   return (
     <div className="w-full h-fit flex flex-col p-5 bg-white rounded-md border shadow gap-3 ">
@@ -73,14 +74,16 @@ const Tab = ({ data }: TabProps) => {
       </div>
 
       <div className="w-full flex flex-row justify-between items-center font-semibold">
-        <p className="text-sm text-gray-500">{questions} Questions</p>
+        <p className="text-sm text-gray-500">
+          {questions} {t("tab.questions")}
+        </p>
         <div
           className={cn(
             "w-fit p-1 px-2 text-xs rounded-xl capitalize",
-            levelColors[level]
+            difficultyColors[difficulty]
           )}
         >
-          {level}
+          {difficulty}
         </div>
       </div>
 

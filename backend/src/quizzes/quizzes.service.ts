@@ -6,6 +6,7 @@ import { FilesService } from 'src/files/files.service';
 import { ListQuizDto } from './dto/list-quiz-dto';
 import { Quiz } from './dto/quiz-dto';
 import { PostgrestError } from '@supabase/supabase-js';
+import { ListQuizResponse } from './dto/list-quiz-response';
 
 @Injectable()
 export class QuizzesService {
@@ -43,37 +44,63 @@ export class QuizzesService {
       });
 
       const quizArr = await Promise.all(promiseArr);
+      const count: number = quizArr
+        .flat()
+        .reduce((acc, item) => acc + (item?.quiz?.length ?? 0), 0);
 
       const quizRow = {
-        user_id: dto.userId!,
+        owner_id: dto.userId!,
         title,
         description,
         data: quizArr.flat(),
+        questions_count: count,
         file_ids: dto.fileIds,
         color,
         icon,
+        difficulty,
       };
 
-      const { data, error } = await supabase.from('quizzes').insert([quizRow]);
-      if (error) {
+      const { data, error } = await supabase
+        .from('quizzes')
+        .insert([quizRow])
+        .select()
+        .single();
+
+      if (error || !data) {
         console.log('error', error);
-        throw new Error(error.message);
+        throw new Error(error?.message);
       }
+
+      const quizData = {
+        user_id: userId,
+        quiz_id: data.id,
+      };
+
+      const quizPromiseArr = [
+        supabase.from('favorite_quizzes').insert([quizData]),
+        supabase.from('quiz_progress').insert([quizData]),
+      ];
+
+      const x = await Promise.all(quizPromiseArr);
+      console.log('x', x);
     } catch (err: any) {
       console.log('err', err);
       throw new Error(err?.message || 'Create new quiz failed');
     }
   }
 
-  async listQuiz(dto: ListQuizDto): Promise<Quiz[]> {
+  async listQuiz(dto: ListQuizDto): Promise<ListQuizResponse[]> {
     try {
       const {
         data,
         error,
-      }: { data: Quiz[] | null; error: PostgrestError | null } = await supabase
-        .from('quizzes')
-        .select('*')
-        .eq('user_id', dto.userId);
+      }: { data: ListQuizResponse[] | null; error: PostgrestError | null } =
+        await supabase
+          .from('quizzes')
+          .select(
+            'title, description, questions_count, color, icon, difficulty',
+          )
+          .eq('owner_id', dto.userId);
 
       if (error || !data) {
         console.error('Supabase error: ', error?.message);

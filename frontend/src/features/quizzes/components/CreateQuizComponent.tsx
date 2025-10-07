@@ -20,11 +20,11 @@ import SelectIcon from "@/components/select-icon";
 import * as FaIcons from "react-icons/fa";
 
 const levels = [
-  { title: "Beginner", color: "accent-green-500" },
-  { title: "Junior", color: "accent-green-500" },
-  { title: "Mid", color: "accent-blue-500" },
-  { title: "Advanced", color: "accent-orange-500" },
-  { title: "Expert", color: "accent-red-500" },
+  { title: "beginner", color: "accent-green-500" },
+  { title: "easy", color: "accent-green-500" },
+  { title: "mid", color: "accent-blue-500" },
+  { title: "hard", color: "accent-orange-500" },
+  { title: "expert", color: "accent-red-500" },
 ];
 
 const questionsCountOptions: string[] = [
@@ -137,6 +137,7 @@ const CreateQuizComponent = () => {
               <span
                 key={i}
                 className={cn(
+                  "capitalize",
                   i === value ? `text-blue-500 font-bold` : "text-gray-500"
                 )}
               >
