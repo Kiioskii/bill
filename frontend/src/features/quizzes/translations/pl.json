@@ -3,5 +3,10 @@
         "questions": "Pytań",
         "progress": "Postęp",
         "start": "Start"
+    },
+    "page": {
+        "title": "Twoje Quizy",
+        "description": "Wybierz quiz, żeby się sprawdzić",
+        "create_quiz": "Nowy quiz"
     }
 }

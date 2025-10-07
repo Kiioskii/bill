@@ -116,4 +116,24 @@ export class QuizzesService {
       throw new Error('Unknown error occurred while listing quizzes');
     }
   }
+
+  async addToFavorites(userId: string, quizId: string) {
+    try {
+      const dataToInsert = {
+        user_id: userId,
+        quiz_id: quizId,
+      };
+      const { data, error } = await supabase
+        .from('favorite_quizzes')
+        .insert([dataToInsert]);
+
+      if (error || !data) {
+        throw new Error(error?.message || 'Add to favorites supabase error');
+      }
+      return data;
+    } catch (err: any) {
+      console.log('err', err);
+      throw new Error(err?.message || 'Add to favorites failed');
+    }
+  }
 }

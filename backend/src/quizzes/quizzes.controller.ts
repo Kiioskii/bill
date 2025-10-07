@@ -17,8 +17,20 @@ export class QuizzesController {
 
   @UseGuards(SupabaseJwtGuard)
   @Get('list')
-  async listQuiz(@User('sub') userId: string, @Body() body) {
+  async listQuiz(@User('sub') userId: string) {
     const data = { userId };
+    const response = await this.quizzesService.listQuiz(data);
+    return response;
+  }
+
+  @UseGuards(SupabaseJwtGuard)
+  @Post('addToFavorites')
+  async addToFavorites(
+    @User('sub') userId: string,
+    @Body() body: { quizId: string },
+  ) {
+    const quizId = body.quizId;
+    const data = { userId, quizId };
     const response = await this.quizzesService.listQuiz(data);
     return response;
   }
