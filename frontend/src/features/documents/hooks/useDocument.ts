@@ -1,9 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import {
-  extractDocumentRequest,
-  getDocumentByIdRequest,
-  // listDocumentsByCategoryRequest,
-  // listDocumentsRequest,
+    extractDocumentRequest,
+    getDocumentByIdRequest,
+    // listDocumentsByCategoryRequest,
+    // listDocumentsRequest,
 } from "../api/documentsApi";
 
 // /**
@@ -37,36 +37,30 @@ import {
  *   - `isLoading`: Boolean indicating if the query is currently loading.
  *   - `refetch`: Function to manually refetch the document.
  */
-export const useDocumentById = (
-  fileId?: string | null,
-  options?: { enabled?: boolean }
-) => {
-  const isEnabled = !!fileId && (options?.enabled ?? true);
+export const useDocumentById = (fileId?: string | null, options?: { enabled?: boolean }) => {
+    const isEnabled = !!fileId && (options?.enabled ?? true);
 
-  const { data, error, isLoading, refetch } = useQuery({
-    queryKey: ["documents_by_id", fileId],
-    queryFn: async () => {
-      if (!fileId) return null; // guard
-      return await getDocumentByIdRequest(fileId);
-    },
-    enabled: isEnabled,
-  });
+    const { data, error, isLoading, refetch } = useQuery({
+        queryKey: ["documents_by_id", fileId],
+        queryFn: () => {
+            if (!fileId) return null; // guard
+            return getDocumentByIdRequest(fileId);
+        },
+        enabled: isEnabled,
+    });
 
-  return { data, error, isLoading, refetch };
+    return { data, error, isLoading, refetch };
 };
 
-export const useExtractDocumentData = (
-  fileId?: string | null,
-  documentId?: string | null
-) => {
-  const { data, error, isLoading, refetch } = useQuery({
-    queryKey: ["extract_document", fileId, documentId],
-    queryFn: async () => {
-      if (!fileId || !documentId) return null; // guard
-      return await extractDocumentRequest({ fileId, documentId });
-    },
-    enabled: false,
-  });
+export const useExtractDocumentData = (fileId?: string | null, documentId?: string | null) => {
+    const { data, error, isLoading, refetch } = useQuery({
+        queryKey: ["extract_document", fileId, documentId],
+        queryFn: async () => {
+            if (!fileId || !documentId) return null; // guard
+            return await extractDocumentRequest({ fileId, documentId });
+        },
+        enabled: false,
+    });
 
-  return { data, error, isLoading, refetch };
+    return { data, error, isLoading, refetch };
 };

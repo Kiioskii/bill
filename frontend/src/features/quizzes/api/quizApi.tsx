@@ -15,3 +15,10 @@ export const toggleFavoriteRequest = async (data: { quizId: string; isFavorite: 
     const response = await api.post("quizzes/toggleFavorite", data);
     return response.data;
 };
+
+export const getQuizDataRequest = async (quizId: string) => {
+    const response = await api.get("quizzes/getQuizData", {
+        params: { quizId },
+    });
+    return response.data;
+};

@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { QuizzesService } from './quizzes.service';
 import { SupabaseJwtGuard } from 'src/auth/supabase-jwt.guard';
 import { User } from 'src/auth/auth.decorator';
@@ -32,6 +40,17 @@ export class QuizzesController {
     const { quizId, isFavorite } = body;
     const data = { userId, quizId, isFavorite };
     const response = await this.quizzesService.toggleFavorite(data);
+    return response;
+  }
+
+  @UseGuards(SupabaseJwtGuard)
+  @Get('getQuizData')
+  async getQuizData(
+    @User('sub') userId: string,
+    @Param('quizId') quizId: string,
+  ) {
+    const data = { userId, quizId };
+    const response = await this.quizzesService.getQuizData(data);
     return response;
   }
 }

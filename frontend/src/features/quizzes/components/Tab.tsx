@@ -7,6 +7,7 @@ import { FaRegStar, FaStar } from "react-icons/fa";
 import { MdEdit } from "react-icons/md";
 import { useTranslation } from "react-i18next";
 import { useToggleFavorite } from "../hooks/useToggleFavorite";
+import { useNavigate } from "react-router-dom";
 interface QuizI {
     id: string;
     title: string;
@@ -41,8 +42,7 @@ const Tab = ({ data }: TabProps) => {
         isFavorite = false,
         progress = 0,
     } = data;
-
-    console.log("data", data);
+    const navigate = useNavigate();
 
     const { t } = useTranslation("quizzes");
     const [favorite, setFavorite] = useState(isFavorite || false);
@@ -52,6 +52,10 @@ const Tab = ({ data }: TabProps) => {
         const newValue = !favorite;
         setFavorite(newValue);
         toggleFavorite({ quizId: id, isFavorite: newValue });
+    };
+
+    const handleNavigate = () => {
+        navigate(`/quizzes/${id}`);
     };
 
     return (
@@ -100,7 +104,11 @@ const Tab = ({ data }: TabProps) => {
             <Progress value={progress} color="bg-indigo-600" className="bg-indigo-400/20" />
 
             <div className="w-full flex flex-row justify-between gap-2">
-                <Button size="default" className="flex-grow bg-indigo-500 text-white font-bold">
+                <Button
+                    size="default"
+                    onClick={handleNavigate}
+                    className="flex-grow bg-indigo-500 text-white font-bold"
+                >
                     {t("tab.start")}
                 </Button>
                 <Button size="icon" variant={"ghost"}>

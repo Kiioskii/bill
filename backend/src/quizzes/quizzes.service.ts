@@ -158,4 +158,23 @@ export class QuizzesService {
       throw new Error(err?.message || 'Add to favorites failed');
     }
   }
+
+  async getQuizData(dta: { userId: string; quizId: string }) {
+    try {
+      const { data, error } = await supabase
+        .from('quizzes')
+        .select(
+          'title, data, questions_count, quiz_progress( user_id, quiz_id)',
+        );
+
+      console.log('data', data);
+
+      if (error) {
+        throw new Error(error?.message || 'Get quiz data failed');
+      }
+    } catch (err: any) {
+      console.error('err', err);
+      throw new Error(err?.message || 'Add to favorites failed');
+    }
+  }
 }
