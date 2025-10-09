@@ -47,7 +47,7 @@ export class QuizzesController {
   @Get('getQuizData')
   async getQuizData(
     @User('sub') userId: string,
-    @Param('quizId') quizId: string,
+    @Query('quizId') quizId: string,
   ) {
     const data = { userId, quizId };
     const response = await this.quizzesService.getQuizData(data);
