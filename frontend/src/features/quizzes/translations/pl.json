@@ -2,11 +2,15 @@
     "tab": {
         "questions": "Pytań",
         "progress": "Postęp",
-        "start": "Start"
+        "start": "Start",
+        "continue": "Kontynuuj"
     },
     "page": {
         "title": "Twoje Quizy",
         "description": "Wybierz quiz, żeby się sprawdzić",
-        "create_quiz": "Nowy quiz"
+        "create_quiz": "Nowy quiz",
+        "questions": "Pytanie",
+        "of": "z",
+        "complete": "Ukończono"
     }
 }

@@ -1,15 +1,14 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toggleFavoriteRequest } from "../api/quizApi";
+import { makeQuizProgressRequest } from "../api/quizApi";
 import { showToast } from "@/lib/toast";
 
-export const useToggleFavorite = () => {
+export const useMakeQuizProgress = () => {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationKey: ["add_quiz_to_favorites"],
-        mutationFn: (data: { quizId: string; isFavorite: boolean }) => toggleFavoriteRequest(data),
+        mutationKey: ["make_quiz_progress"],
+        mutationFn: (data: { quizId: string; progress: number }) => makeQuizProgressRequest(data),
         onSuccess: (_, variables) => {
-            console.log("xxxx");
             queryClient.invalidateQueries(["get_quiz_list", variables.quizId]);
         },
         onError: (error) => {

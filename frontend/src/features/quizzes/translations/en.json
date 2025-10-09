@@ -2,11 +2,15 @@
     "tab": {
         "questions": "Questions",
         "progress": "Progress",
-        "start": "Start"
+        "start": "Start",
+        "continue": "Continue"
     },
     "page": {
         "title": "Your Quizzes",
         "description": "Chose a quiz to test your knowledge",
-        "create_quiz": "Create Quiz"
+        "create_quiz": "Create Quiz",
+        "questions": "Questions",
+        "of": "of",
+        "complete": "Complete"
     }
 }

@@ -98,7 +98,7 @@ export class QuizzesService {
         await supabase
           .from('quizzes')
           .select(
-            'id, title, description, questions_count, color, icon, difficulty',
+            'id, title, description, questions_count, color, icon, difficulty, quiz_progress( answered_count)',
           )
           .eq('owner_id', dto.userId);
 
@@ -166,7 +166,7 @@ export class QuizzesService {
       const { data, error } = await supabase
         .from('quizzes')
         .select(
-          'title, data, questions_count, quiz_progress( user_id, quiz_id)',
+          'title, data,icon, color, questions_count, quiz_progress( user_id, quiz_id)',
         )
         .eq('id', quizId);
 
@@ -174,7 +174,42 @@ export class QuizzesService {
         throw new Error(error?.message || 'Get quiz data failed');
       }
 
-      return data;
+      const questions = data[0].data.reduce((acc, item) => {
+        return item.quiz;
+      }, []);
+
+      const response = {
+        ...data[0],
+        questions,
+      };
+
+      return response;
+    } catch (err: any) {
+      console.error('err', err);
+      throw new Error(err?.message || 'Add to favorites failed');
+    }
+  }
+
+  async makeProgress(data: {
+    userId: string;
+    quizId: string;
+    progress: number;
+  }) {
+    console.log('makeProgress', data);
+    const { userId, quizId, progress } = data;
+    try {
+      const { error } = await supabase
+        .from('quiz_progress')
+        .update({ answered_count: +progress })
+        .eq('user_id', userId)
+        .eq('quiz_id', quizId);
+
+      console.log('error', error);
+
+      if (error) {
+        throw new Error(error?.message || 'Get quiz data failed');
+      }
+      return;
     } catch (err: any) {
       console.error('err', err);
       throw new Error(err?.message || 'Add to favorites failed');

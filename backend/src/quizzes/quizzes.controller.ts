@@ -53,4 +53,16 @@ export class QuizzesController {
     const response = await this.quizzesService.getQuizData(data);
     return response;
   }
+
+  @UseGuards(SupabaseJwtGuard)
+  @Get('makeProgress')
+  async makeProgress(
+    @User('sub') userId: string,
+    @Query('quizId') quizId: string,
+    @Query('progress') progress: number,
+  ) {
+    const data = { userId, quizId, progress };
+    const response = await this.quizzesService.makeProgress(data);
+    return response;
+  }
 }
