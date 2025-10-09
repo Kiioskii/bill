@@ -159,19 +159,22 @@ export class QuizzesService {
     }
   }
 
-  async getQuizData(dta: { userId: string; quizId: string }) {
+  async getQuizData(dto: { userId: string; quizId: string }) {
+    const { quizId } = dto;
+
     try {
       const { data, error } = await supabase
         .from('quizzes')
         .select(
           'title, data, questions_count, quiz_progress( user_id, quiz_id)',
-        );
-
-      console.log('data', data);
+        )
+        .eq('id', quizId);
 
       if (error) {
         throw new Error(error?.message || 'Get quiz data failed');
       }
+
+      return data;
     } catch (err: any) {
       console.error('err', err);
       throw new Error(err?.message || 'Add to favorites failed');

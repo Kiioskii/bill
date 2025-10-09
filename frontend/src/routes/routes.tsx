@@ -11,56 +11,55 @@ import QuizzesPage from "@/features/quizzes/pages/QuizzesPage";
 import QuizPage from "@/features/quizzes/pages/QuizPage";
 
 const LanguageWrapper = ({ children }) => {
-    const { i18n } = useTranslation();
-    const { lng } = useParams();
+  const { i18n } = useTranslation();
+  const { lng } = useParams();
 
-    useEffect(() => {
-        if (lng && i18n.language !== lng) {
-            i18n.changeLanguage(lng);
-        }
-    }, [lng, i18n]);
+  useEffect(() => {
+    if (lng && i18n.language !== lng) {
+      i18n.changeLanguage(lng);
+    }
+  }, [lng, i18n]);
 
-    return children;
+  return children;
 };
 
 export const AppRoutes = () => {
-    return (
-        <Routes>
-            <Route path="/" element={<Navigate to="/pl" replace />} />
+  return (
+    <Routes>
+      <Route path="/" element={<Navigate to="/pl" replace />} />
 
-            <Route
-                path="/:lng/login"
-                element={
-                    <LanguageWrapper>
-                        <LogInPage />
-                    </LanguageWrapper>
-                }
-            />
-            <Route
-                path="/:lng/signup"
-                element={
-                    <LanguageWrapper>
-                        <SignUpPage />
-                    </LanguageWrapper>
-                }
-            />
+      <Route
+        path="/:lng/login"
+        element={
+          <LanguageWrapper>
+            <LogInPage />
+          </LanguageWrapper>
+        }
+      />
+      <Route
+        path="/:lng/signup"
+        element={
+          <LanguageWrapper>
+            <SignUpPage />
+          </LanguageWrapper>
+        }
+      />
 
-            <Route
-                path="/:lng"
-                element={
-                    <LanguageWrapper>
-                        <ProtectedRoute>
-                            <DashboardLayout />
-                        </ProtectedRoute>
-                    </LanguageWrapper>
-                }
-            >
-                <Route index element={<HomePage />} />
-                <Route path="documents" element={<DocumentsPage />} />
-                <Route path="quizzes" element={<QuizzesPage />}>
-                    <Route path=":quizId" element={<QuizPage />} />
-                </Route>
-            </Route>
-        </Routes>
-    );
+      <Route
+        path="/:lng"
+        element={
+          <LanguageWrapper>
+            <ProtectedRoute>
+              <DashboardLayout />
+            </ProtectedRoute>
+          </LanguageWrapper>
+        }
+      >
+        <Route index element={<HomePage />} />
+        <Route path="documents" element={<DocumentsPage />} />
+        <Route path="quizzes" element={<QuizzesPage />} />
+        <Route path="quizzes/:quizId" element={<QuizPage />} />
+      </Route>
+    </Routes>
+  );
 };

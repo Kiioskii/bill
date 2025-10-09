@@ -3,11 +3,15 @@ import { createSlice } from "@reduxjs/toolkit";
 interface IQuizzesSlice {
   isOpen: boolean;
   fileIds: string[];
+  selectedQuestion: number;
+  selectedQuiz: any | null;
 }
 
 const initialState: IQuizzesSlice = {
   isOpen: false,
   fileIds: [],
+  selectedQuestion: 0,
+  selectedQuiz: null,
 };
 
 const quizzesSlice = createSlice({
@@ -27,6 +31,12 @@ const quizzesSlice = createSlice({
     },
     removeFiles: (state) => {
       state.fileIds = [];
+    },
+    selectQuiz: (state, action) => {
+      state.selectedQuiz = action.payload;
+    },
+    selectQuestion: (state, action) => {
+      state.selectedQuestion = action.payload;
     },
   },
 });

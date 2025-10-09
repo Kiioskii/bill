@@ -2,23 +2,26 @@ import api from "@/api/api";
 import type { CreateQuizPayload } from "../types/Quiz";
 
 export const createQuiz = async (data: CreateQuizPayload) => {
-    const response = await api.post("quizzes/create", data);
-    return response.data;
+  const response = await api.post("quizzes/create", data);
+  return response.data;
 };
 
 export const listQuiz = async () => {
-    const response = await api.get("quizzes/list");
-    return response.data;
+  const response = await api.get("quizzes/list");
+  return response.data;
 };
 
-export const toggleFavoriteRequest = async (data: { quizId: string; isFavorite: boolean }) => {
-    const response = await api.post("quizzes/toggleFavorite", data);
-    return response.data;
+export const toggleFavoriteRequest = async (data: {
+  quizId: string;
+  isFavorite: boolean;
+}) => {
+  const response = await api.post("quizzes/toggleFavorite", data);
+  return response.data;
 };
 
 export const getQuizDataRequest = async (quizId: string) => {
-    const response = await api.get("quizzes/getQuizData", {
-        params: { quizId },
-    });
-    return response.data;
+  const response = await api.get("quizzes/getQuizData", {
+    params: { quizId },
+  });
+  return response.data;
 };
