@@ -12,10 +12,10 @@ import { cn } from "@/lib/utils";
 import { colors } from "../utils/colors";
 import { useTranslation } from "react-i18next";
 import { useMakeQuizProgress } from "../hooks/useMakeQuizProgress";
+import QuestionSection from "../components/QuestionSection";
+import SummarySection from "../components/SummarySection";
 
 const QuizPage = () => {
-    const letters = ["A", "B", "C", "D"];
-
     const { quizId } = useParams<{ quizId: string }>();
     const [questionNumber, setQuestionNumber] = useState(0);
     const [selectedQuestions, setSelectedQuestion] = useState<number>(-1);
@@ -23,6 +23,8 @@ const QuizPage = () => {
 
     const { data, error, isLoading } = useGetQuizData(quizId!);
     const { mutate: makeProgress } = useMakeQuizProgress();
+
+    console.log("questionNumber", questionNumber);
 
     if (isLoading) return <p>Ładowanie...</p>;
     if (error) return <p>Błąd: {String(error)}</p>;
@@ -76,29 +78,16 @@ const QuizPage = () => {
                     transition={{ duration: 0.7 }}
                     className="w-full h-full border shadow rounded-md bg-white flex flex-col p-5 text-gray-700"
                 >
-                    <p className="font-semibold text-xl">{data.questions[questionNumber]?.question}</p>
-                    <div className="w-full font-semibold flex flex-col gap-5 mt-10">
-                        {data.questions[questionNumber].answers.map((item, index) => (
-                            <div
-                                onClick={() => {
-                                    handleSelectAnswer(index);
-                                }}
-                                className={cn(
-                                    "w-full border-2 flex flex-row items-center gap-3 p-3 rounded-md cursor-pointer hover:bg-indigo-50",
-                                    selectedQuestions === index && "border-indigo-500 bg-indigo-50"
-                                )}
-                            >
-                                {selectedQuestions === index ? (
-                                    <FaCircleCheck className="text-indigo-500 w-6 h-6" />
-                                ) : (
-                                    <div className="rounded-full w-6 h-6 border-2 flex items-center justify-center border-slate-300 p-3">
-                                        {letters[index]}
-                                    </div>
-                                )}
-                                {item.text}
-                            </div>
-                        ))}
-                    </div>
+                    {questionNumber === data.questions.length ? (
+                        <QuestionSection
+                            selectedQuestions={selectedQuestions}
+                            handleSelectAnswer={handleSelectAnswer}
+                            question={data?.questions[questionNumber]?.question}
+                            answers={data?.questions[questionNumber]?.answers}
+                        />
+                    ) : (
+                        <SummarySection />
+                    )}
                 </motion.div>
             </div>
         </AnimatePresence>
