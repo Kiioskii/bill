@@ -166,7 +166,7 @@ export class QuizzesService {
       const { data, error } = await supabase
         .from('quizzes')
         .select(
-          'title, data,icon, color, questions_count, quiz_progress( user_id, quiz_id)',
+          'title, data,icon, color, questions_count, quiz_progress( answered_count )',
         )
         .eq('id', quizId);
 
@@ -174,13 +174,18 @@ export class QuizzesService {
         throw new Error(error?.message || 'Get quiz data failed');
       }
 
+      console.log('data', data[0]);
+
       const questions = data[0].data.reduce((acc, item) => {
         return item.quiz;
       }, []);
 
+      const progress = data[0]?.quiz_progress[0]?.answered_count;
+
       const response = {
         ...data[0],
         questions,
+        progress,
       };
 
       return response;
