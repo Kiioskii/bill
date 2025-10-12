@@ -65,4 +65,16 @@ export class QuizzesController {
     const response = await this.quizzesService.makeProgress(data);
     return response;
   }
+
+  @UseGuards(SupabaseJwtGuard)
+  @Get('setFavoriteQuestion')
+  async setFavoriteQuestion(
+    @User('sub') userId: string,
+    @Query('quizId') quizId: string,
+    @Query('question') question: number,
+  ) {
+    const data = { userId, quizId, question };
+    const response = await this.quizzesService.setFavoriteQuestion(data);
+    return response;
+  }
 }

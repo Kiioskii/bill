@@ -220,4 +220,32 @@ export class QuizzesService {
       throw new Error(err?.message || 'Add to favorites failed');
     }
   }
+
+  async setFavoriteQuestion(data: {
+    userId: string;
+    quizId: string;
+    question: number;
+  }) {
+    const { userId, quizId, question } = data;
+    const insertData = {
+      user_id: userId,
+      quiz_id: quizId,
+      question,
+    };
+    try {
+      const { error } = await supabase
+        .from('favorite_questions')
+        .insert([insertData]);
+
+      console.log('error', error);
+
+      if (error) {
+        throw new Error(error?.message || 'Add favorite question failed');
+      }
+      return;
+    } catch (err: any) {
+      console.error('err', err);
+      throw new Error(err?.message || 'Add favorite question failed');
+    }
+  }
 }
