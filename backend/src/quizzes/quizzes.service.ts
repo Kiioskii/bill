@@ -248,4 +248,31 @@ export class QuizzesService {
       throw new Error(err?.message || 'Add favorite question failed');
     }
   }
+
+  async unsetFavoriteQuestion(data: {
+    userId: string;
+    quizId: string;
+    question: number;
+  }) {
+    const { userId, quizId, question } = data;
+
+    try {
+      const { error } = await supabase
+        .from('favorite_questions')
+        .delete()
+        .eq('user_id', userId)
+        .eq('quiz_id', quizId)
+        .eq('question', question);
+
+      console.log('error', error);
+
+      if (error) {
+        throw new Error(error?.message || 'Remove favorite question failed');
+      }
+      return;
+    } catch (err: any) {
+      console.error('err', err);
+      throw new Error(err?.message || 'Remove favorite question failed');
+    }
+  }
 }

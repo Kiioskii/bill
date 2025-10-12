@@ -7,6 +7,9 @@ const SummarySection = ({ quizId, answers }) => {
     const correct = answers.filter((item) => item.status === "correct");
     const incorrect = answers.filter((item) => item.status === "incorrect");
     const skipped = answers.filter((item) => item.status === "skipped");
+    const favorites = answers.filter((item) => item.isFavorite);
+
+    console.log("favorites", favorites);
 
     return (
         <div className="w-full h-full flex flex-col gap-5">
@@ -77,6 +80,30 @@ const SummarySection = ({ quizId, answers }) => {
                             {Math.floor((incorrect.length * 100) / answers.length)}%
                         </p>
                     </div>
+                </div>
+            </div>
+            <div className="bg-white w-full flex flex-col border rounded-md p-5 ">
+                <div className="flex flex-row items-center text-center gap-3 mb-5">
+                    <div className="h-10 w-10 rounded-md flex items-center justify-center text-amber-500 bg-amber-100">
+                        <FaStar />
+                    </div>
+                    <p className="text-md font-semibold ">Performance Breakdown</p>
+                </div>
+
+                <div className="w-full flex flex-col gap-3">
+                    {favorites.map((item, index) => (
+                        <div className="w-full flex flex-col border rounded-md p-3">
+                            <div className="w-full flex flex-row justify-between items-center">
+                                <p className="font-semibold text-md">Question {index}</p>
+                                <div className="flex flex-row items-center gap-2">
+                                    <FaStar className="text-amber-500" />
+                                    <FaCheck className="text-emerald-500" />
+
+                                    {/* {item.status === 'correct' && } */}
+                                </div>
+                            </div>
+                        </div>
+                    ))}
                 </div>
             </div>
         </div>

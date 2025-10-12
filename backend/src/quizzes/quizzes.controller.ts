@@ -77,4 +77,16 @@ export class QuizzesController {
     const response = await this.quizzesService.setFavoriteQuestion(data);
     return response;
   }
+
+  @UseGuards(SupabaseJwtGuard)
+  @Get('unsetFavoriteQuestion')
+  async unsetFavoriteQuestion(
+    @User('sub') userId: string,
+    @Query('quizId') quizId: string,
+    @Query('question') question: number,
+  ) {
+    const data = { userId, quizId, question };
+    const response = await this.quizzesService.unsetFavoriteQuestion(data);
+    return response;
+  }
 }

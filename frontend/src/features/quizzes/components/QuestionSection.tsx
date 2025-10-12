@@ -11,6 +11,8 @@ import { Progress } from "@/components/ui/progress";
 import { colors } from "../utils/colors";
 import { useTranslation } from "react-i18next";
 import { useMakeQuizProgress } from "../hooks/useMakeQuizProgress";
+import { useSetFavoriteQuestion } from "../hooks/useSetFavoriteQuestion";
+import { useUnsetFavoriteQuestion } from "../hooks/useUnsetFavoriteQuestion";
 
 const QuestionSection = ({ quizId, setAnswers, setShowSummary }: { quizId: string; setAnswers: void }) => {
     const letters = ["A", "B", "C", "D"];
@@ -20,6 +22,8 @@ const QuestionSection = ({ quizId, setAnswers, setShowSummary }: { quizId: strin
 
     const { t } = useTranslation("quizzes");
     const { mutate: makeProgress } = useMakeQuizProgress();
+    const { mutate: setFavoriteQuestion } = useSetFavoriteQuestion();
+    const { mutate: unsetFavoriteQuestion } = useUnsetFavoriteQuestion();
 
     const { data, error, isLoading } = useGetQuizData(quizId!);
     const [questionNumber, setQuestionNumber] = useState(() => data?.progress ?? 0);
@@ -29,8 +33,20 @@ const QuestionSection = ({ quizId, setAnswers, setShowSummary }: { quizId: strin
 
     const { color, icon, progress, title, questions } = data;
 
+    const handleFavoriteQuestion = () => {
+        const newState = !favorite;
+        const question = questionNumber;
+        setFavorite((prev) => !prev);
+        // if (newState) {
+        //     setFavoriteQuestion({ quizId, question });
+        // } else {
+        //     unsetFavoriteQuestion({ quizId, question });
+        // }
+    };
+
     const handleSelectAnswer = (index: number) => {
         const answer = index;
+        const isFavorite = favorite;
         const question = questionNumber;
         setSelectedAnswer(answer);
         let status = "skipped";
@@ -40,10 +56,10 @@ const QuestionSection = ({ quizId, setAnswers, setShowSummary }: { quizId: strin
             status = data.questions[question].answers[answer].correct ? "correct" : "incorrect";
         }
 
-        setAnswers((prev) => [...prev, { question: data.questions[question].question, status }]);
+        setAnswers((prev) => [...prev, { question: data.questions[question].question, status, isFavorite }]);
         setTimeout(() => {
+            setFavorite(false);
             makeProgress({ quizId, progress: questionNumber });
-            console.log("questionNumber", questionNumber, questions.length - 1);
 
             if (questionNumber < questions.length - 1) {
                 setQuestionNumber((prev) => prev + 1);
@@ -94,9 +110,7 @@ const QuestionSection = ({ quizId, setAnswers, setShowSummary }: { quizId: strin
                 >
                     <div className="w-full flex flex-row justify-between">
                         <div
-                            onClick={() => {
-                                setFavorite((prev) => !prev);
-                            }}
+                            onClick={handleFavoriteQuestion}
                             className={cn(
                                 "h-10 w-10 right-0 top-0 rounded-full flex justify-center items-center text-gray-400 cursor-pointer",
                                 favorite && "text-yellow-400"

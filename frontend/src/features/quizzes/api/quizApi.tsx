@@ -31,3 +31,19 @@ export const makeQuizProgressRequest = async (data: { quizId: string; progress: 
     });
     return response.data;
 };
+
+export const setFavoriteQuestion = async (data: { quizId: string; question: number }) => {
+    const { quizId, question } = data;
+    const response = await api.get("quizzes/setFavoriteQuestion", {
+        params: { quizId, question },
+    });
+    return response.data;
+};
+
+export const unsetFavoriteQuestion = async (data: { quizId: string; question: number }) => {
+    const { quizId, question } = data;
+    const response = await api.get("quizzes/unsetFavoriteQuestion", {
+        params: { quizId, question },
+    });
+    return response.data;
+};

@@ -7,7 +7,7 @@ export const useMakeQuizProgress = () => {
 
     return useMutation({
         mutationKey: ["make_quiz_progress"],
-        mutationFn: (data: { quizId: string; progress: number }) => makeQuizProgressRequest(data),
+        mutationFn: (data: { quizId: string; question: number }) => makeQuizProgressRequest(data),
         onSuccess: (_, variables) => {
             queryClient.invalidateQueries(["get_quiz_list", variables.quizId]);
         },
