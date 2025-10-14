@@ -4,6 +4,10 @@ import { GoDash } from "react-icons/go";
 import { FaArrowRight } from "react-icons/fa6";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { TbReload } from "react-icons/tb";
+import { FaEye } from "react-icons/fa";
+import { MdHome } from "react-icons/md";
+import { ScoreChart } from "./ScoreChart";
 
 const SummarySection = ({ quizId, answers }) => {
     console.log("answers", answers);
@@ -17,27 +21,33 @@ const SummarySection = ({ quizId, answers }) => {
     return (
         <div className="w-full h-full flex flex-col gap-5">
             <div className="w-full flex flex-row gap-5 justify-between">
-                <div className="bg-white w-2/3  border rounded-md p-5">
-                    <div className="flex flex-row justify-between  mb-5">
-                        <div className="flex flex-col">
-                            <h2 className="text-xl font-bold">Your Score</h2>
-                            <h2 className="text-sm text-gray-500">You passed the quiz</h2>
+                <div className="bg-white w-2/3  rounded-md p-5 flex flex-row">
+                    <div className="flex flex-col w-2/3  items-center">
+                        <div className="flex flex-row justify-between mb-5 w-full">
+                            <div className="flex flex-col">
+                                <h2 className="text-xl font-bold">Your Score</h2>
+                                <h2 className="text-sm text-gray-500">You passed the quiz</h2>
+                            </div>
                         </div>
-                        <div></div>
+                        <div className=" flex flex-1 items-center">
+                            <div className="w-fit grid grid-cols-3 gap-20 ">
+                                <div className=" w-fit px-2 flex flex-col justify-center items-center ">
+                                    <h4 className="text-2xl font-bold text-green-600">{correct.length}</h4>
+                                    <p className="text-xm text-gray-500">Correct</p>
+                                </div>
+                                <div className="w-fit px-2  flex flex-col justify-center items-center ">
+                                    <h4 className="text-2xl font-bold text-red-600">{incorrect.length}</h4>
+                                    <p className="text-xm text-gray-500">Incorrect</p>
+                                </div>
+                                <div className="w-fit px-2  flex flex-col justify-center items-center">
+                                    <p className="text-2xl font-bold text-amber-600">{skipped.length}</p>
+                                    <p className="text-xm text-gray-500">Skipped</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div className="w-fit grid grid-cols-3 gap-20  ">
-                        <div className=" w-fit px-2 flex flex-col justify-center items-center ">
-                            <h4 className="text-2xl font-bold text-green-600">{correct.length}</h4>
-                            <p className="text-xm text-gray-500">Correct</p>
-                        </div>
-                        <div className="w-fit px-2  flex flex-col justify-center items-center ">
-                            <h4 className="text-2xl font-bold text-red-600">{incorrect.length}</h4>
-                            <p className="text-xm text-gray-500">Incorrect</p>
-                        </div>
-                        <div className="w-fit px-2  flex flex-col justify-center items-center">
-                            <p className="text-2xl font-bold text-amber-600">{skipped.length}</p>
-                            <p className="text-xm text-gray-500">Skipped</p>
-                        </div>
+                    <div className="flex flex-col w-1/3 ">
+                        <ScoreChart score={Math.floor((correct.length * 100) / answers.length)} />
                     </div>
                 </div>
                 <div className="bg-white border w-1/3 rounded-md"></div>
@@ -148,12 +158,15 @@ const SummarySection = ({ quizId, answers }) => {
             </div>
             <div className="bg-white w-full grid grid-cols-3 rounded-md p-5 gap-5 border text-white font-semibold">
                 <Button size={"lg"} variant={"default"}>
+                    <TbReload />
                     Retry Quiz
                 </Button>
                 <Button size={"lg"} variant={"secondary"} className="bg-red-500 text-white ">
+                    <FaEye />
                     Review Mistakes
                 </Button>
                 <Button size={"lg"} variant={"secondary"} className="bg-gray-500 text-white ">
+                    <MdHome />
                     Back to Dashboard
                 </Button>
             </div>
