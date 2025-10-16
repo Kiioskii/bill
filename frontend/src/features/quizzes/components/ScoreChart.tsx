@@ -19,6 +19,7 @@ const chartConfig = {
 
 export const ScoreChart = ({ score }) => {
     console.log("score", score);
+    console.log("score xxx", Math.floor((450 * score) / 100));
     return (
         <Card className="flex flex-col border-0 shadow-none">
             <CardContent className="flex-1 pb-0">
@@ -26,7 +27,7 @@ export const ScoreChart = ({ score }) => {
                     <RadialBarChart
                         data={chartData}
                         startAngle={90}
-                        endAngle={Math.floor((450 * score) / 100)}
+                        endAngle={90 + Math.floor((360 * score) / 100)}
                         innerRadius={60}
                         outerRadius={85}
                     >

@@ -1,100 +1,86 @@
 import { FaCheck, FaStar } from "react-icons/fa6";
-import { IoClose } from "react-icons/io5";
-import { GoDash } from "react-icons/go";
 import { FaArrowRight } from "react-icons/fa6";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { TbReload } from "react-icons/tb";
 import { FaEye } from "react-icons/fa";
 import { MdHome } from "react-icons/md";
-import { ScoreChart } from "./ScoreChart";
+import { FaTrophy } from "react-icons/fa";
+import { FaCircleQuestion } from "react-icons/fa6";
+import { useMemo } from "react";
+import ScoreSummary from "./summary/ScoreSummary";
+import QuickStats from "./summary/QuickStats";
+import DetailedStats from "./summary/DetailedStats";
 
-const SummarySection = ({ quizId, answers }) => {
-    console.log("answers", answers);
-    const correct = answers.filter((item) => item.status === "correct");
-    const incorrect = answers.filter((item) => item.status === "incorrect");
-    const skipped = answers.filter((item) => item.status === "skipped");
-    const favorites = answers.filter((item) => item.isFavorite);
+const SummarySection = ({ answers }) => {
+    const { correct, incorrect, skipped, favorites, score } = useMemo(() => {
+        const correct = answers.filter((a) => a.status === "correct");
+        const incorrect = answers.filter((a) => a.status === "incorrect");
+        const skipped = answers.filter((a) => a.status === "skipped");
+        const favorites = answers.filter((a) => a.isFavorite);
+        const score = Math.floor((correct.length * 100) / answers.length);
+        return { correct, incorrect, skipped, favorites, score };
+    }, [answers]);
+
+    const grade = () => {
+        if (score < 50) return <p className="text-rose-600">F</p>;
+        if (score <= 60) return <p className="text-orange-600">E</p>;
+        if (score <= 70) return <p className="text-yellow-900">D</p>;
+        if (score <= 80) return <p className="text-amber-600">C</p>;
+        if (score <= 90) return <p className="text-sky-500">B</p>;
+        if (score > 90) return <p className="text-green-400">A</p>;
+    };
+
+    const quickStats = [
+        {
+            title: "Grade",
+            icon: <FaTrophy size={15} />,
+            textColor: "text-violet-500",
+            bgColor: "bg-violet-100",
+            value: grade(),
+        },
+        {
+            title: "Grade",
+            icon: <FaTrophy size={15} />,
+            textColor: "text-violet-500",
+            bgColor: "bg-violet-100",
+            value: grade(),
+        },
+        {
+            title: "Favorites",
+            icon: <FaStar size={15} />,
+            textColor: "text-amber-500",
+            bgColor: "bg-amber-100",
+            value: favorites.length,
+        },
+        {
+            title: "Total Questions",
+            icon: <FaCircleQuestion size={15} />,
+            textColor: "text-sky-500",
+            bgColor: "bg-sky-100",
+            value: answers.length,
+        },
+    ];
 
     console.log("favorites", favorites);
 
     return (
         <div className="w-full h-full flex flex-col gap-5">
             <div className="w-full flex flex-row gap-5 justify-between">
-                <div className="bg-white w-2/3  rounded-md p-5 flex flex-row">
-                    <div className="flex flex-col w-2/3  items-center">
-                        <div className="flex flex-row justify-between mb-5 w-full">
-                            <div className="flex flex-col">
-                                <h2 className="text-xl font-bold">Your Score</h2>
-                                <h2 className="text-sm text-gray-500">You passed the quiz</h2>
-                            </div>
-                        </div>
-                        <div className=" flex flex-1 items-center">
-                            <div className="w-fit grid grid-cols-3 gap-20 ">
-                                <div className=" w-fit px-2 flex flex-col justify-center items-center ">
-                                    <h4 className="text-2xl font-bold text-green-600">{correct.length}</h4>
-                                    <p className="text-xm text-gray-500">Correct</p>
-                                </div>
-                                <div className="w-fit px-2  flex flex-col justify-center items-center ">
-                                    <h4 className="text-2xl font-bold text-red-600">{incorrect.length}</h4>
-                                    <p className="text-xm text-gray-500">Incorrect</p>
-                                </div>
-                                <div className="w-fit px-2  flex flex-col justify-center items-center">
-                                    <p className="text-2xl font-bold text-amber-600">{skipped.length}</p>
-                                    <p className="text-xm text-gray-500">Skipped</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="flex flex-col w-1/3 ">
-                        <ScoreChart score={Math.floor((correct.length * 100) / answers.length)} />
-                    </div>
-                </div>
-                <div className="bg-white border w-1/3 rounded-md"></div>
+                <ScoreSummary
+                    correct={correct.length}
+                    incorrect={incorrect.length}
+                    skipped={skipped.length}
+                    score={score}
+                />
+                <QuickStats data={quickStats} />
             </div>
-            <div className="bg-white w-full flex flex-col border rounded-md p-5 ">
-                <p className="text-md font-semibold mb-5">Performance Breakdown</p>
-                <div className="w-full grid grid-cols-4 gap-10">
-                    <div className="w-full flex flex-col items-center gap-1 justify-center p-3 bg-emerald-50 rounded-md">
-                        <div className="rounded-full h-10 w-10 bg-emerald-100 text-emerald-500 flex items-center justify-center">
-                            <FaCheck />
-                        </div>
-                        <p className="text-emerald-500 text-2xl font-bold">{correct.length}</p>
-                        <p className="text-sm text-gray-600">Correct Answers</p>
-                        <p className="text-sm text-emerald-600">
-                            {Math.floor((correct.length * 100) / answers.length)}%
-                        </p>
-                    </div>
-                    <div className="w-full flex flex-col items-center gap-1 justify-center p-3 bg-red-50 rounded-md">
-                        <div className="rounded-full h-10 w-10 bg-red-100 text-red-500 flex items-center justify-center">
-                            <IoClose />
-                        </div>
-                        <p className="text-red-500 text-2xl font-bold">{incorrect.length}</p>
-                        <p className="text-sm text-gray-600">Incorrect Answers</p>
-                        <p className="text-sm text-red-600">{Math.floor((incorrect.length * 100) / answers.length)}%</p>
-                    </div>
-                    <div className="w-full flex flex-col items-center gap-1 justify-center p-3 bg-amber-50 rounded-md">
-                        <div className="rounded-full h-10 w-10 bg-amber-100 text-amber-500 flex items-center justify-center">
-                            <GoDash />
-                        </div>
-                        <p className="text-amber-500 text-2xl font-bold">{incorrect.length}</p>
-                        <p className="text-sm text-gray-600">Skipped Answers</p>
-                        <p className="text-sm text-amber-600">
-                            {Math.floor((incorrect.length * 100) / answers.length)}%
-                        </p>
-                    </div>
-                    <div className="w-full flex flex-col items-center gap-1 justify-center p-3 bg-cyan-50 rounded-md">
-                        <div className="rounded-full h-10 w-10 bg-cyan-100 text-cyan-500 flex items-center justify-center">
-                            <FaStar />
-                        </div>
-                        <p className="text-cyan-500 text-2xl font-bold">{incorrect.length}</p>
-                        <p className="text-sm text-gray-600">Skipped Answers</p>
-                        <p className="text-sm text-cyan-600">
-                            {Math.floor((incorrect.length * 100) / answers.length)}%
-                        </p>
-                    </div>
-                </div>
-            </div>
+            <DetailedStats
+                correct={correct.length}
+                incorrect={incorrect.length}
+                skipped={skipped.length}
+                answers={answers.length}
+            />
             <div className="bg-white w-full flex flex-col border rounded-md p-5 ">
                 <div className="flex flex-row items-center text-center gap-3 mb-5">
                     <div className="h-10 w-10 rounded-md flex items-center justify-center text-amber-500 bg-amber-100">
