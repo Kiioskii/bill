@@ -17,36 +17,35 @@ import Timer from "./summary/Timer";
 
 const QuestionSection = ({
   quizId,
-  timerId,
-  timeLeft,
+  showSummary,
   setAnswers,
   setShowSummary,
+  setTimeLeft,
+  color,
+  icon,
+  progress,
+  title,
+  questions,
 }: {
   quizId: string;
-  timerId: string;
   timeLeft: number;
   setAnswers: void;
   setShowSummary: void;
 }) => {
   const letters = ["A", "B", "C", "D"];
 
-  const [favorite, setFavorite] = useState(false);
+  console.log("questions", questions);
+
+  const [questionNumber, setQuestionNumber] = useState(progress ?? 0);
+  const [favorite, setFavorite] = useState(
+    questions[questionNumber].isFavorite || false
+  );
   const [selectedAnswer, setSelectedAnswer] = useState<number>(-1);
 
   const { t } = useTranslation("quizzes");
   const { mutate: makeProgress } = useMakeQuizProgress();
   const { mutate: setFavoriteQuestion } = useSetFavoriteQuestion();
   const { mutate: unsetFavoriteQuestion } = useUnsetFavoriteQuestion();
-
-  const { data, error, isLoading } = useGetQuizData(quizId!);
-  const [questionNumber, setQuestionNumber] = useState(
-    () => data?.progress ?? 0
-  );
-
-  if (isLoading) return <p>Ładowanie...</p>;
-  if (error) return <p>Błąd: {String(error)}</p>;
-
-  const { color, icon, progress, title, questions } = data;
 
   const handleFavoriteQuestion = () => {
     const newState = !favorite;
@@ -68,25 +67,28 @@ const QuestionSection = ({
     if (answer === -1) {
       status = "skipped";
     } else {
-      status = data.questions[question].answers[answer].correct
+      status = questions[question].answers[answer].correct
         ? "correct"
         : "incorrect";
     }
 
     setAnswers((prev) => [
       ...prev,
-      { question: data.questions[question].question, status, isFavorite },
+      { question: questions[question].question, status, isFavorite },
     ]);
 
     setTimeout(() => {
-      setFavorite(false);
-      makeProgress({ quizId, progress: questionNumber });
+      if (question + 1 < questions.length) {
+        console.log("question+1", question + 1);
+        console.log("questions.length", questions.length);
+        setFavorite(questions[question + 1].isFavorite);
+      }
+      // makeProgress({ quizId, progress: questionNumber });
 
       if (questionNumber < questions.length - 1) {
         setQuestionNumber((prev) => prev + 1);
         setSelectedAnswer(-1);
       } else {
-        clearInterval(timerId);
         setShowSummary(true);
       }
     }, 1000);
@@ -104,7 +106,7 @@ const QuestionSection = ({
             <div
               className={cn(
                 "w-10 h-10 rounded-md flex justify-center items-center bg-indigo-100 text-indigo-500",
-                data?.color && `${colors[color]}`
+                color && `${colors[color]}`
               )}
             >
               {createElement(FaIcons[icon] || FaIcons.FaCog)}
@@ -143,7 +145,10 @@ const QuestionSection = ({
               {favorite ? <FaStar size={20} /> : <FaRegStar size={20} />}
             </div>
             <div>
-              <Timer timeLeft={timeLeft} />
+              <Timer
+                end={showSummary}
+                handleFinish={(item) => setTimeLeft(item)}
+              />
             </div>
             <div
               onClick={() => {

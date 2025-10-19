@@ -31,7 +31,7 @@ const DetailedStats = ({ correct, incorrect, skipped, answers, favorites }) => {
           <div className="rounded-full h-10 w-10 bg-amber-100 text-amber-500 flex items-center justify-center">
             <GoDash />
           </div>
-          <p className="text-amber-500 text-2xl font-bold">{incorrect}</p>
+          <p className="text-amber-500 text-2xl font-bold">{skipped}</p>
           <p className="text-sm text-gray-600">Skipped Answers</p>
           <p className="text-sm text-amber-600">
             {Math.floor((skipped * 100) / answers)}%

@@ -69,8 +69,6 @@ const SummarySection = ({ answers, timeLeft }) => {
     },
   ];
 
-  console.log("favorites", favorites);
-
   return (
     <div className="w-full h-full flex flex-col gap-5">
       <div className="w-full flex flex-row gap-5 justify-between">

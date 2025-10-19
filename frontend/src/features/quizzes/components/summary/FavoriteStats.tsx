@@ -1,4 +1,5 @@
 import { FaArrowRight, FaCheck, FaStar } from "react-icons/fa6";
+import { IoClose } from "react-icons/io5";
 
 const FavoriteStats = ({ favorites }) => {
   return (
@@ -17,9 +18,12 @@ const FavoriteStats = ({ favorites }) => {
               <p className="font-semibold text-md">Question {index + 1}</p>
               <div className="flex flex-row items-center gap-2">
                 <FaStar className="text-amber-500" />
-                <FaCheck className="text-emerald-500" />
 
-                {/* {item.status === 'correct' && } */}
+                {item.status === "correct" ? (
+                  <FaCheck className="text-emerald-500" />
+                ) : (
+                  <IoClose className="text-red-500" />
+                )}
               </div>
             </div>
             <p className="text-sm text-gray-600">{item.question}</p>

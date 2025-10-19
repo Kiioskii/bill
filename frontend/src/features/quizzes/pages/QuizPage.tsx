@@ -2,25 +2,29 @@ import { useParams } from "react-router-dom";
 
 import QuestionSection from "../components/QuestionSection";
 import SummarySection from "../components/SummarySection";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useGetQuizData } from "../hooks/useGetQuizData";
 
 const QuizPage = () => {
   const { quizId } = useParams<{ quizId: string }>();
   const [answers, setAnswers] = useState([]);
   const [showSummary, setShowSummary] = useState<boolean>(false);
 
-  const [timeLeft, setTimeLeft] = useState(15 * 60); // 15 minut = 900 sekund
+  const [timeLeft, setTimeLeft] = useState(0);
   const [timerId, setTimerId] = useState(null);
-  useEffect(() => {
-    if (timeLeft <= 0) return;
 
-    const timer = setInterval(() => {
-      setTimeLeft((t) => t - 1);
-    }, 1000);
-    setTimerId(timer);
+  const { data, error, isLoading } = useGetQuizData(quizId!);
+  console.log("data", timeLeft, data);
 
-    return () => clearInterval(timer);
-  }, [timeLeft]);
+  const color = data?.color ?? "gray";
+  const icon = data?.icon ?? null;
+  const progress = 0;
+  // const progress = data?.progress ?? 0;
+  const title = data?.title ?? "";
+  const questions = data?.questions ?? [];
+
+  if (isLoading) return <p>Ładowanie...</p>;
+  if (error) return <p>Błąd: {String(error)}</p>;
 
   return (
     <div className="w-full h-full overflow-scroll flex flex-col gap-5">
@@ -31,8 +35,16 @@ const QuizPage = () => {
           quizId={quizId}
           timerId={timerId}
           timeLeft={timeLeft}
+          showSummary={showSummary}
           setAnswers={setAnswers}
           setShowSummary={setShowSummary}
+          setTimeLeft={setTimeLeft}
+          setTimerId={setTimerId}
+          color={color}
+          icon={icon}
+          progress={progress}
+          title={title}
+          questions={questions}
         />
       )}
     </div>

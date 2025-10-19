@@ -81,8 +81,7 @@ export class QuizzesService {
         supabase.from('quiz_progress').insert([quizData]),
       ];
 
-      const x = await Promise.all(quizPromiseArr);
-      console.log('x', x);
+      await Promise.all(quizPromiseArr);
     } catch (err: any) {
       console.log('err', err);
       throw new Error(err?.message || 'Create new quiz failed');
@@ -166,7 +165,7 @@ export class QuizzesService {
       const { data, error } = await supabase
         .from('quizzes')
         .select(
-          'title, data,icon, color, questions_count, quiz_progress( answered_count )',
+          'title, data,icon, color, questions_count, quiz_progress( answered_count ), favorite_questions( question )',
         )
         .eq('id', quizId);
 
@@ -174,11 +173,19 @@ export class QuizzesService {
         throw new Error(error?.message || 'Get quiz data failed');
       }
 
-      console.log('data', data[0]);
+      console.log('getQuizData data', data[0].data);
 
-      const questions = data[0].data.reduce((acc, item) => {
+      const favoriteArr = data[0].favorite_questions.map(
+        (item) => item.question,
+      );
+
+      const questionsData = data[0].data.reduce((acc, item) => {
         return item.quiz;
       }, []);
+
+      const questions = questionsData.map((item, index) => {
+        return { ...item, isFavorite: favoriteArr.includes(index) };
+      });
 
       const progress = data[0]?.quiz_progress[0]?.answered_count;
 
@@ -209,8 +216,6 @@ export class QuizzesService {
         .eq('user_id', userId)
         .eq('quiz_id', quizId);
 
-      console.log('error', error);
-
       if (error) {
         throw new Error(error?.message || 'Get quiz data failed');
       }
@@ -237,8 +242,6 @@ export class QuizzesService {
         .from('favorite_questions')
         .insert([insertData]);
 
-      console.log('error', error);
-
       if (error) {
         throw new Error(error?.message || 'Add favorite question failed');
       }
@@ -263,8 +266,6 @@ export class QuizzesService {
         .eq('user_id', userId)
         .eq('quiz_id', quizId)
         .eq('question', question);
-
-      console.log('error', error);
 
       if (error) {
         throw new Error(error?.message || 'Remove favorite question failed');
