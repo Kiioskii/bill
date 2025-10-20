@@ -18,7 +18,7 @@ const QuickStats = ({ data }) => {
                             </div>
                             <p>{item.title}</p>
                         </div>
-                        <p className="font-semibold">{item.value}</p>
+                        <div className="font-semibold">{item.value}</div>
                     </div>
                 ))}
             </div>
