@@ -89,4 +89,16 @@ export class QuizzesController {
     const response = await this.quizzesService.unsetFavoriteQuestion(data);
     return response;
   }
+
+  @UseGuards(SupabaseJwtGuard)
+  @Post('saveResult')
+  async saveResult(
+    @User('sub') userId: string,
+    @Body() body: { quizId: string; correctCount: number; answers: any[] },
+  ) {
+    const { quizId, correctCount, answers } = body;
+    const data = { userId, quizId, correctCount, answers };
+    const response = await this.quizzesService.saveResult(data);
+    return response;
+  }
 }

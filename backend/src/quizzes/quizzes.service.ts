@@ -173,8 +173,6 @@ export class QuizzesService {
         throw new Error(error?.message || 'Get quiz data failed');
       }
 
-      console.log('getQuizData data', data[0].data);
-
       const favoriteArr = data[0].favorite_questions.map(
         (item) => item.question,
       );
@@ -269,6 +267,35 @@ export class QuizzesService {
 
       if (error) {
         throw new Error(error?.message || 'Remove favorite question failed');
+      }
+      return;
+    } catch (err: any) {
+      console.error('err', err);
+      throw new Error(err?.message || 'Remove favorite question failed');
+    }
+  }
+
+  async saveResult(data: {
+    quizId: string;
+    userId: string;
+    correctCount: number;
+    answers: any[];
+  }) {
+    const { quizId, userId, correctCount, answers } = data;
+    try {
+      const insertData = {
+        quiz_id: quizId,
+        user_id: userId,
+        correct_count: correctCount,
+        total_count: answers.length,
+        answers,
+      };
+
+      const { error } = await supabase
+        .from('quiz_results')
+        .insert([insertData]);
+      if (error) {
+        throw new Error(error?.message || 'Save quiz result failed');
       }
       return;
     } catch (err: any) {
