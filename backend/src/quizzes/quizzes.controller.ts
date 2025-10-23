@@ -94,10 +94,10 @@ export class QuizzesController {
   @Post('saveResult')
   async saveResult(
     @User('sub') userId: string,
-    @Body() body: { quizId: string; correctCount: number; answers: any[] },
+    @Body() body: { quizId: string; answers: any[] },
   ) {
-    const { quizId, correctCount, answers } = body;
-    const data = { userId, quizId, correctCount, answers };
+    const { quizId, answers } = body;
+    const data = { userId, quizId, answers };
     const response = await this.quizzesService.saveResult(data);
     return response;
   }

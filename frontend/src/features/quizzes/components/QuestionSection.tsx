@@ -17,9 +17,9 @@ import Timer from "./summary/Timer";
 
 const QuestionSection = ({
   quizId,
-  setAnswers,
   setTimeLeft,
-  setShowSummary,
+  handleFinish,
+  handleSaveAnswer,
   color,
   icon,
   progress,
@@ -28,9 +28,9 @@ const QuestionSection = ({
 }: {
   quizId: string;
   timeLeft: number;
-  setAnswers: void;
   setTimeLeft: void;
-  setShowSummary: void;
+  handleFinish: void;
+  handleSaveAnswer: void;
   color: string;
   icon: string;
   progress: number;
@@ -83,10 +83,7 @@ const QuestionSection = ({
       setGetTime(true);
     }
 
-    setAnswers((prev) => [
-      ...prev,
-      { question: questions[question].question, status, isFavorite },
-    ]);
+    handleSaveAnswer(question, status, isFavorite);
 
     setTimeout(() => {
       if (question + 1 < questions.length) {
@@ -98,7 +95,7 @@ const QuestionSection = ({
         setQuestionNumber((prev) => prev + 1);
         setSelectedAnswer(-1);
       } else {
-        setShowSummary(true);
+        handleFinish();
       }
     }, 1000);
   };

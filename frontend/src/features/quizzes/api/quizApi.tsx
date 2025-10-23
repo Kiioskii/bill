@@ -61,3 +61,11 @@ export const unsetFavoriteQuestion = async (data: {
   });
   return response.data;
 };
+
+export const saveQuizResult = async (data: {
+  quizId: string;
+  answers: any[];
+}) => {
+  const response = await api.post("quizzes/saveResult", data);
+  return response.data;
+};

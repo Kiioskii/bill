@@ -275,18 +275,17 @@ export class QuizzesService {
     }
   }
 
-  async saveResult(data: {
-    quizId: string;
-    userId: string;
-    correctCount: number;
-    answers: any[];
-  }) {
-    const { quizId, userId, correctCount, answers } = data;
+  async saveResult(data: { quizId: string; userId: string; answers: any[] }) {
+    const { quizId, userId, answers } = data;
+
+    console.log('answers', answers);
+    console.log('answers.length', answers.length);
+
     try {
       const insertData = {
         quiz_id: quizId,
         user_id: userId,
-        correct_count: correctCount,
+        correct_count: answers.filter((a) => a.status === 'correct').length,
         total_count: answers.length,
         answers,
       };

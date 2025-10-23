@@ -4,6 +4,7 @@ import QuestionSection from "../components/QuestionSection";
 import SummarySection from "../components/SummarySection";
 import { useState } from "react";
 import { useGetQuizData } from "../hooks/useGetQuizData";
+import { useSaveQuizResult } from "../hooks/useSaveQuizResult";
 
 const QuizPage = () => {
   const { quizId } = useParams<{ quizId: string }>();
@@ -14,6 +15,7 @@ const QuizPage = () => {
   const [timeLeft, setTimeLeft] = useState(0);
 
   const { data, error, isLoading } = useGetQuizData(quizId!);
+  const { mutate: saveResult } = useSaveQuizResult();
 
   const color = data?.color ?? "gray";
   const icon = data?.icon ?? null;
@@ -25,6 +27,22 @@ const QuizPage = () => {
   if (isLoading) return <p>Ładowanie...</p>;
   if (error) return <p>Błąd: {String(error)}</p>;
 
+  const handleFinish = () => {
+    setShowSummary(true);
+    saveResult({ quizId, answers });
+  };
+
+  const handleSaveAnswer = (
+    question: number,
+    status: string,
+    isFavorite: boolean
+  ) => {
+    setAnswers((prev) => [
+      ...prev,
+      { question: questions[question].question, status, isFavorite },
+    ]);
+  };
+
   return (
     <div className="w-full h-full overflow-scroll flex flex-col gap-5">
       {showSummary ? (
@@ -33,9 +51,9 @@ const QuizPage = () => {
         <QuestionSection
           quizId={quizId}
           timerId={timerId}
-          setShowSummary={setShowSummary}
+          handleFinish={handleFinish}
+          handleSaveAnswer={handleSaveAnswer}
           showSummary={showSummary}
-          setAnswers={setAnswers}
           setTimerId={setTimerId}
           setTimeLeft={setTimeLeft}
           color={color}
