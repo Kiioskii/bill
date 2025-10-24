@@ -15,6 +15,8 @@ export class QuizzesService {
     private readonly fileService: FilesService,
   ) {}
 
+  private readonly logger = new Logger(QuizzesService.name);
+
   async createQuiz(dto: CreateQuizDto) {
     try {
       const {
@@ -67,7 +69,7 @@ export class QuizzesService {
         .single();
 
       if (error || !data) {
-        console.log('error', error);
+        this.logger.error('Create quiz insert failed', error?.message);
         throw new Error(error?.message);
       }
 
@@ -83,59 +85,74 @@ export class QuizzesService {
 
       await Promise.all(quizPromiseArr);
     } catch (err: any) {
-      console.log('err', err);
+      this.logger.error('Create quiz failed', err?.stack || err?.message);
       throw new Error(err?.message || 'Create new quiz failed');
     }
   }
 
   async listQuiz(dto: ListQuizDto): Promise<ListQuizResponse[]> {
     try {
-      const {
-        data,
-        error,
-      }: { data: ListQuizResponse[] | null; error: PostgrestError | null } =
-        await supabase
-          .from('quizzes')
-          .select(
-            'id, title, description, questions_count, color, icon, difficulty, quiz_progress( answered_count)',
-          )
-          .eq('owner_id', dto.userId);
+      const { userId } = dto;
 
-      const {
-        data: favData,
-        error: FavError,
-      }: { data: { quiz_id: string }[] | null; error: PostgrestError | null } =
-        await supabase
-          .from('favorite_quizzes')
-          .select('quiz_id')
-          .eq('user_id', dto.userId)
-          .eq('favorite', true);
+      // Run all required queries in parallel
+      const quizzesPromise = supabase
+        .from('quizzes')
+        .select(
+          'id, title, description, questions_count, color, icon, difficulty, quiz_progress( answered_count)'
+        )
+        .eq('owner_id', userId);
 
-      const { data: results, error: resultsError } = await supabase
+      const favoritesPromise = supabase
+        .from('favorite_quizzes')
+        .select('quiz_id')
+        .eq('user_id', userId)
+        .eq('favorite', true);
+
+      const resultsPromise = supabase
         .from('quiz_results')
         .select('quiz_id')
-        .eq('user_id', dto.userId);
+        .eq('user_id', userId);
 
-      if (error || !data || FavError || resultsError) {
-        console.error('Supabase error: ', error?.message);
-        throw new Error(error?.message || 'Supabase list quizzes error');
+      const [quizzesRes, favoritesRes, resultsRes] = await Promise.all([
+        quizzesPromise,
+        favoritesPromise,
+        resultsPromise,
+      ]);
+
+      if (quizzesRes.error || favoritesRes.error || resultsRes.error || !quizzesRes.data) {
+        this.logger.error('Supabase list queries failed', {
+          quizzesError: quizzesRes.error?.message,
+          favoritesError: favoritesRes.error?.message,
+          resultsError: resultsRes.error?.message,
+        } as Record<string, unknown>);
+        throw new Error(
+          quizzesRes.error?.message ||
+            favoritesRes.error?.message ||
+            resultsRes.error?.message ||
+            'Supabase list quizzes error',
+        );
       }
 
-      const favoriteQuizzes = favData?.map((item) => item.quiz_id);
-      const completedQuizzes = favData?.map((item) => item.quiz_id);
+      const favoriteSet = new Set((favoritesRes.data ?? []).map((row) => row.quiz_id));
+      const completedSet = new Set((resultsRes.data ?? []).map((row) => row.quiz_id));
 
-      const response = data?.map((item) => {
+      const response: ListQuizResponse[] = (quizzesRes.data ?? []).map((item: any) => {
+        const quizProgress = Array.isArray(item?.quiz_progress) && item.quiz_progress.length > 0
+          ? item.quiz_progress
+          : [{ answered_count: 0 }];
+
         return {
           ...item,
-          isFavorite: favoriteQuizzes?.includes(item.id),
-          completed: completedQuizzes?.includes(item.id),
-        };
+          quiz_progress: quizProgress,
+          isFavorite: favoriteSet.has(item.id),
+          completed: completedSet.has(item.id),
+        } as ListQuizResponse;
       });
 
       return response;
-    } catch (err: any) {
+    } catch (err: unknown) {
       if (err instanceof Error) {
-        console.error('Unexpected error: ', err.message);
+        this.logger.error('Unexpected error while listing quizzes', err.stack);
         throw err;
       }
       throw new Error('Unknown error occurred while listing quizzes');
@@ -178,6 +195,7 @@ export class QuizzesService {
         .eq('id', quizId);
 
       if (error) {
+        this.logger.error('Get quiz data query failed', error?.message);
         throw new Error(error?.message || 'Get quiz data failed');
       }
 
@@ -203,7 +221,7 @@ export class QuizzesService {
 
       return response;
     } catch (err: any) {
-      console.error('err', err);
+      this.logger.error('Get quiz data failed', err?.stack || err?.message);
       throw new Error(err?.message || 'Add to favorites failed');
     }
   }
@@ -213,7 +231,7 @@ export class QuizzesService {
     quizId: string;
     progress: number;
   }) {
-    console.log('makeProgress', data);
+    this.logger.debug(`makeProgress payload: ${JSON.stringify(data)}`);
     const { userId, quizId, progress } = data;
     try {
       const { error } = await supabase
@@ -223,11 +241,12 @@ export class QuizzesService {
         .eq('quiz_id', quizId);
 
       if (error) {
+        this.logger.error('Update quiz progress failed', error?.message);
         throw new Error(error?.message || 'Get quiz data failed');
       }
       return;
     } catch (err: any) {
-      console.error('err', err);
+      this.logger.error('Make progress failed', err?.stack || err?.message);
       throw new Error(err?.message || 'Add to favorites failed');
     }
   }
@@ -249,11 +268,12 @@ export class QuizzesService {
         .insert([insertData]);
 
       if (error) {
+        this.logger.error('Insert favorite question failed', error?.message);
         throw new Error(error?.message || 'Add favorite question failed');
       }
       return;
     } catch (err: any) {
-      console.error('err', err);
+      this.logger.error('Set favorite question failed', err?.stack || err?.message);
       throw new Error(err?.message || 'Add favorite question failed');
     }
   }
@@ -274,11 +294,12 @@ export class QuizzesService {
         .eq('question', question);
 
       if (error) {
+        this.logger.error('Delete favorite question failed', error?.message);
         throw new Error(error?.message || 'Remove favorite question failed');
       }
       return;
     } catch (err: any) {
-      console.error('err', err);
+      this.logger.error('Unset favorite question failed', err?.stack || err?.message);
       throw new Error(err?.message || 'Remove favorite question failed');
     }
   }
@@ -286,8 +307,7 @@ export class QuizzesService {
   async saveResult(data: { quizId: string; userId: string; answers: any[] }) {
     const { quizId, userId, answers } = data;
 
-    console.log('answers', answers);
-    console.log('answers.length', answers.length);
+    this.logger.debug(`saveResult answers length: ${answers.length}`);
 
     try {
       const insertData = {
@@ -302,11 +322,12 @@ export class QuizzesService {
         .from('quiz_results')
         .insert([insertData]);
       if (error) {
+        this.logger.error('Insert quiz result failed', error?.message);
         throw new Error(error?.message || 'Save quiz result failed');
       }
       return;
     } catch (err: any) {
-      console.error('err', err);
+      this.logger.error('Save quiz result failed', err?.stack || err?.message);
       throw new Error(err?.message || 'Remove favorite question failed');
     }
   }

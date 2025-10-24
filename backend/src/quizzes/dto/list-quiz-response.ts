@@ -8,4 +8,8 @@ export interface ListQuizResponse {
   difficulty: Difficulty;
   color: string | null;
   icon: string | null;
+  // Added fields for UI needs
+  quiz_progress?: { answered_count: number }[];
+  isFavorite?: boolean;
+  completed?: boolean;
 }
