@@ -111,16 +111,24 @@ export class QuizzesService {
           .eq('user_id', dto.userId)
           .eq('favorite', true);
 
-      if (error || !data || FavError) {
+      const { data: results, error: resultsError } = await supabase
+        .from('quiz_results')
+        .select('quiz_id')
+        .eq('user_id', dto.userId);
+
+      if (error || !data || FavError || resultsError) {
         console.error('Supabase error: ', error?.message);
         throw new Error(error?.message || 'Supabase list quizzes error');
       }
 
       const favoriteQuizzes = favData?.map((item) => item.quiz_id);
+      const completedQuizzes = favData?.map((item) => item.quiz_id);
+
       const response = data?.map((item) => {
         return {
           ...item,
           isFavorite: favoriteQuizzes?.includes(item.id),
+          completed: completedQuizzes?.includes(item.id),
         };
       });
 

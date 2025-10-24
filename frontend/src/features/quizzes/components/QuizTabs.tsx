@@ -5,8 +5,6 @@ import Tab from "./Tab";
 const QuizTabs = () => {
     const { data, error, isPending } = useListQuiz();
 
-    console.log("data", data);
-
     if (isPending)
         return (
             <div className="w-full h-full flex  justify-center align-middle">

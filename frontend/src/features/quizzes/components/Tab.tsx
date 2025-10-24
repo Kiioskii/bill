@@ -18,6 +18,7 @@ interface QuizI {
     color: string;
     questions: string;
     isFavorite: boolean;
+    completed: boolean;
     progress: number;
 }
 
@@ -41,6 +42,7 @@ const Tab = ({ data }: TabProps) => {
         questions_count: questions = 10,
         difficulty = "medium",
         isFavorite = false,
+        completed = false,
         quiz_progress: progress = 0,
     } = data;
     const navigate = useNavigate();
@@ -99,13 +101,26 @@ const Tab = ({ data }: TabProps) => {
             </div>
 
             <div className="w-full flex flex-row justify-between text-md capitalize text-gray-500  items-center font-semibold ">
-                <p>{t("tab.progress")}</p>
-                <p className="text-indigo-500">{Math.floor((+progress[0].answered_count * 100) / questions)}%</p>
+                {completed ? (
+                    <>
+                        <p>{t("tab.completed")}</p>
+                        <p className="text-emerald-500">
+                            {completed ? 100 : Math.floor((+progress[0].answered_count * 100) / questions)}%
+                        </p>
+                    </>
+                ) : (
+                    <>
+                        <p>{t("tab.progress")}</p>
+                        <p className="text-indigo-500">
+                            {Math.floor((+progress[0].answered_count * 100) / questions)}%
+                        </p>
+                    </>
+                )}
             </div>
 
             <Progress
-                value={Math.floor((+progress[0].answered_count * 100) / questions)}
-                color="bg-indigo-600"
+                value={completed ? 100 : Math.floor((+progress[0].answered_count * 100) / questions)}
+                color={cn("bg-indigo-600", completed && "bg-emerald-500")}
                 className="bg-indigo-400/20"
             />
 
@@ -113,9 +128,17 @@ const Tab = ({ data }: TabProps) => {
                 <Button
                     size="default"
                     onClick={handleNavigate}
-                    className="flex-grow bg-indigo-500 text-white font-bold"
+                    // variant={completed ? "defaultLine" : "default"}
+                    className={cn(
+                        "flex-grow bg-indigo-500 text-white font-bold",
+                        completed && "bg-white text-indigo-500 border-1 border-indigo-500 hover:bg-accent "
+                    )}
                 >
-                    {progress[0].answered_count === 0 ? t("tab.start") : t("tab.continue")}
+                    {completed
+                        ? t("tab.retake")
+                        : progress[0].answered_count === 0
+                        ? t("tab.start")
+                        : t("tab.continue")}
                 </Button>
                 <Button size="icon" variant={"ghost"}>
                     <MdEdit />
