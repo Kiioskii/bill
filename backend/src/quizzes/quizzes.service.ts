@@ -89,46 +89,58 @@ export class QuizzesService {
   }
 
   async listQuiz(dto: ListQuizDto): Promise<ListQuizResponse[]> {
+    const { userId } = dto;
     try {
-      const {
-        data,
-        error,
-      }: { data: ListQuizResponse[] | null; error: PostgrestError | null } =
-        await supabase
-          .from('quizzes')
-          .select(
-            'id, title, description, questions_count, color, icon, difficulty, quiz_progress( answered_count)',
-          )
-          .eq('owner_id', dto.userId);
+      const quizPromise = supabase
+        .from('quizzes')
+        .select(
+          'id, title, description, questions_count, color, icon, difficulty, quiz_progress( answered_count)',
+        )
+        .eq('owner_id', userId);
 
-      const {
-        data: favData,
-        error: FavError,
-      }: { data: { quiz_id: string }[] | null; error: PostgrestError | null } =
-        await supabase
-          .from('favorite_quizzes')
-          .select('quiz_id')
-          .eq('user_id', dto.userId)
-          .eq('favorite', true);
+      const favoritesPromise = supabase
+        .from('favorite_quizzes')
+        .select('quiz_id')
+        .eq('user_id', userId)
+        .eq('favorite', true);
 
-      const { data: results, error: resultsError } = await supabase
+      const resultsPromise = supabase
         .from('quiz_results')
         .select('quiz_id')
-        .eq('user_id', dto.userId);
+        .eq('user_id', userId);
 
-      if (error || !data || FavError || resultsError) {
-        console.error('Supabase error: ', error?.message);
-        throw new Error(error?.message || 'Supabase list quizzes error');
+      const [quizzesRes, favoritesRes, resultsRes] = await Promise.all([
+        quizPromise,
+        favoritesPromise,
+        resultsPromise,
+      ]);
+
+      if (
+        quizzesRes.error ||
+        favoritesRes.error ||
+        resultsRes.error ||
+        !quizzesRes.data
+      ) {
+        throw new Error(
+          quizzesRes.error?.message ||
+            favoritesRes.error?.message ||
+            resultsRes.error?.message ||
+            'Supabase list quizzes error',
+        );
       }
 
-      const favoriteQuizzes = favData?.map((item) => item.quiz_id);
-      const completedQuizzes = favData?.map((item) => item.quiz_id);
+      const favoriteSet = new Set(
+        (favoritesRes.data ?? []).map((item) => item.quiz_id),
+      );
+      const completedSet = new Set(
+        (resultsRes.data ?? []).map((item) => item.quiz_id),
+      );
 
-      const response = data?.map((item) => {
+      const response = (quizzesRes.data ?? []).map((item: any) => {
         return {
           ...item,
-          isFavorite: favoriteQuizzes?.includes(item.id),
-          completed: completedQuizzes?.includes(item.id),
+          isFavorite: favoriteSet.has(item.id),
+          completed: completedSet.has(item.id),
         };
       });
 
@@ -213,7 +225,6 @@ export class QuizzesService {
     quizId: string;
     progress: number;
   }) {
-    console.log('makeProgress', data);
     const { userId, quizId, progress } = data;
     try {
       const { error } = await supabase
@@ -285,9 +296,8 @@ export class QuizzesService {
 
   async saveResult(data: { quizId: string; userId: string; answers: any[] }) {
     const { quizId, userId, answers } = data;
-
-    console.log('answers', answers);
-    console.log('answers.length', answers.length);
+    console.log('quizId', quizId);
+    console.log('userId', userId);
 
     try {
       const insertData = {

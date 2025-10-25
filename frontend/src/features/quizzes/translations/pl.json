@@ -3,7 +3,9 @@
         "questions": "Pytań",
         "progress": "Postęp",
         "start": "Start",
-        "continue": "Kontynuuj"
+        "continue": "Kontynuuj",
+        "completed": "Ukończono",
+        "retake": "Ponów"
     },
     "page": {
         "title": "Twoje Quizy",

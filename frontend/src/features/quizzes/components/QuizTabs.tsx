@@ -4,6 +4,7 @@ import Tab from "./Tab";
 
 const QuizTabs = () => {
     const { data, error, isPending } = useListQuiz();
+    console.log("list data", data);
 
     if (isPending)
         return (

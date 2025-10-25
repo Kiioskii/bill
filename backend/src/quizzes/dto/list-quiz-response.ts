@@ -8,4 +8,6 @@ export interface ListQuizResponse {
   difficulty: Difficulty;
   color: string | null;
   icon: string | null;
+  isFavorite: boolean;
+  completed: boolean;
 }

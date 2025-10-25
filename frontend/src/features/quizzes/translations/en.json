@@ -3,7 +3,9 @@
         "questions": "Questions",
         "progress": "Progress",
         "start": "Start",
-        "continue": "Continue"
+        "continue": "Continue",
+        "completed": "Completed",
+        "retake": "Retake"
     },
     "page": {
         "title": "Your Quizzes",
