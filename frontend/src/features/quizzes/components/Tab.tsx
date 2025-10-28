@@ -61,6 +61,9 @@ const Tab = ({ data }: TabProps) => {
     const handleNavigate = () => {
         navigate(`/${lng}/quizzes/${id}`);
     };
+    const handleEditNavigate = () => {
+        navigate(`/${lng}/quizzes/edit/${id}`);
+    };
 
     return (
         <div className="w-full h-fit flex flex-col p-5 bg-white rounded-md border shadow gap-3 ">
@@ -140,7 +143,7 @@ const Tab = ({ data }: TabProps) => {
                         ? t("tab.start")
                         : t("tab.continue")}
                 </Button>
-                <Button size="icon" variant={"ghost"}>
+                <Button size="icon" variant={"ghost"} onClick={handleEditNavigate}>
                     <MdEdit />
                 </Button>
             </div>
