@@ -1,4 +1,6 @@
-const QuestionTab = ({ data }) => {
+const QuestionTab = ({ data, setSelectedQuestion }) => {
+    // const
+
     return (
         <div className="w-full border rounded-md p-3 flex flex-col cursor-pointer gap-2">
             <div className="w-full flex flex-row items-center justify-between">
