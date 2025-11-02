@@ -38,8 +38,8 @@ const EditQuizPage = () => {
     console.log("data", data);
     console.log("allData", allData);
 
-    const handleSelectQuestion = (index) => {
-        setSelectedQuestion(index);
+    const handleSelectQuestion = (id: string) => {
+        setSelectedQuestion(id);
     };
 
     const handleToggleFavorite = () => {
@@ -81,7 +81,7 @@ const EditQuizPage = () => {
     const handleAddQuestion = () => {
         const uid = uuidv4();
 
-        const answers = Array.from({ length: 3 }, () => ({
+        const answers = Array.from({ length: 4 }, () => ({
             text: "",
             correct: false,
         }));
@@ -93,6 +93,7 @@ const EditQuizPage = () => {
                 isFavorite: false,
             },
         }));
+        setSelectedQuestion(uid);
     };
 
     const handleAddOption = () => {
@@ -119,24 +120,33 @@ const EditQuizPage = () => {
         }));
     };
 
-    const handleDelete = (id: string) => {
+    const handleDeleteAnswer = (number: number) => {
         if (!selectedQuestion) return;
         setAllData((prev) => ({
             ...prev,
             [selectedQuestion]: {
                 ...prev[selectedQuestion],
-                answers: prev[selectedQuestion].answers.filter((opt) => opt.id !== id),
+                answers: prev[selectedQuestion].answers.filter((_, index) => index !== number),
             },
         }));
     };
+
+    const handleDeleteQuestion = () => {
+        if (!selectedQuestion) return;
+        setAllData((prev) => {
+            const updated = { ...prev };
+            delete updated[selectedQuestion]; // usuwa pytanie o podanym ID
+            return updated;
+        });
+    };
+
     const selected = selectedQuestion ? allData[selectedQuestion] : null;
-    console.log("selected", selected);
 
     return (
         <div className="flex flex-col w-full ">
             <div className="w-full flex flex-row gap-5">
                 {/* QUESTIONS SECTION */}
-                <div className="w-1/4 bg-white border rounded-md p-5 flex flex-col max-h-screen overflow-y-scroll">
+                <div className="w-1/4 bg-white border rounded-md p-5 flex flex-col max-h-screen">
                     <div className="flex flex-row items-center justify-between  mb-5">
                         <p className="text-md font-semibold">Questions</p>
                         <Button variant={"default"} onClick={handleAddQuestion}>
@@ -144,9 +154,10 @@ const EditQuizPage = () => {
                             Add
                         </Button>
                     </div>
-                    <div className="flex flex-col gap-3">
+                    <div className="flex flex-col gap-3  overflow-y-scroll">
                         {Object.entries(allData).map(([id, questionData]) => (
                             <QuestionTab
+                                isSelected={id === selectedQuestion}
                                 key={id}
                                 data={questionData}
                                 number={id}
@@ -172,7 +183,7 @@ const EditQuizPage = () => {
                                         {selected.isFavorite ? <FaStar size={20} /> : <FaRegStar size={20} />}
                                     </div>
                                     <div
-                                        onClick={handleToggleFavorite}
+                                        onClick={handleDeleteQuestion}
                                         className={cn(
                                             "h-10 w-10 rounded-full flex justify-center items-center text-gray-400 cursor-pointer hover:text-red-700"
                                         )}
@@ -204,7 +215,7 @@ const EditQuizPage = () => {
                                             option={option}
                                             onToggleCorrect={() => handleToggleCorrect(index)}
                                             onTextChange={(text) => handleTextChange(index, text)}
-                                            onDelete={() => handleDelete(option.id)}
+                                            onDelete={() => handleDeleteAnswer(index)}
                                         />
                                     ))}
                                 </div>

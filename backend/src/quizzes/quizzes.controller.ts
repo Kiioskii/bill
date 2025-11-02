@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Param,
+  Patch,
   Post,
   Query,
   UseGuards,
@@ -99,6 +100,18 @@ export class QuizzesController {
     const { quizId, answers } = body;
     const data = { userId, quizId, answers };
     const response = await this.quizzesService.saveResult(data);
+    return response;
+  }
+
+  @UseGuards(SupabaseJwtGuard)
+  @Patch('saveResult')
+  async updateQuiz(
+    @User('sub') userId: string,
+    @Body() body: { quizId: string; quiz: any[] },
+  ) {
+    const { quizId, quiz } = body;
+    const data = { userId, quizId, quiz };
+    const response = await this.quizzesService.updateQuiz(data);
     return response;
   }
 }

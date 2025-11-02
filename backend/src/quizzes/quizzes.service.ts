@@ -296,8 +296,6 @@ export class QuizzesService {
 
   async saveResult(data: { quizId: string; userId: string; answers: any[] }) {
     const { quizId, userId, answers } = data;
-    console.log('quizId', quizId);
-    console.log('userId', userId);
 
     try {
       const insertData = {
@@ -311,6 +309,25 @@ export class QuizzesService {
       const { error } = await supabase
         .from('quiz_results')
         .insert([insertData]);
+      if (error) {
+        throw new Error(error?.message || 'Save quiz result failed');
+      }
+      return;
+    } catch (err: any) {
+      console.error('err', err);
+      throw new Error(err?.message || 'Remove favorite question failed');
+    }
+  }
+
+  async updateQuiz(data: { quizId: string; userId: string; quiz: any[] }) {
+    const { quizId, userId, quiz } = data;
+
+    try {
+      const { error } = await supabase
+        .from('quizzes')
+        .update({ data: quiz })
+        .eq('user_id', userId)
+        .eq('quiz_id', quizId);
       if (error) {
         throw new Error(error?.message || 'Save quiz result failed');
       }
